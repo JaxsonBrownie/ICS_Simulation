@@ -20,8 +20,8 @@ print("Current working directory is : %s" % os.getcwd())
 DIR_PATH = dirpath = os.path.dirname(os.path.abspath(__file__))
 print("Current source code location : [%s]" % dirpath)
 
-TOPDIR = 'Modbus_PLC_Simulator'
-LIBDIR = 'src'
+TOPDIR = 'ICS_Simulation'
+LIBDIR = 'modbusPLC'
 
 idx = dirpath.find(TOPDIR)
 gTopDir = dirpath[:idx + len(TOPDIR)] if idx != -1 else dirpath   # found it - truncate right after TOPDIR
@@ -32,7 +32,7 @@ if os.path.exists(gLibDir): sys.path.insert(0, gLibDir)
 #-----------------------------------------------------------------------------
 print("Test import lib: ")
 try:
-    import modbusTcpCom
+    from modbusPLC import modbusTcpCom
 except ImportError as err:
     print("Import error: %s" % str(err))
     exit()
@@ -62,17 +62,18 @@ class testLadderLogic(modbusTcpCom.ladderLogic):
             result.append(not state)
         return result
 
-ALLOW_R_L = ['127.0.0.1', '192.168.0.10']
+ALLOW_R_L = ['127.0.0.1', '192.168.10.21']
 ALLOW_W_L = ['127.0.0.1']
 
-hostIp = 'localhost'
+# Host ip = 192.168.10.11
+hostIp = '0.0.0.0'
 hostPort = 502
 
 # Create a test ladder logic (?)
 #testladderlogic = testLadderLogic(None)
 
 # Create the data handler with the allow read and allow write lists
-dataMgr = modbusTcpCom.plcDataHandler(allowRipList=ALLOW_R_L, allowWipList=ALLOW_W_L)
+dataMgr = modbusTcpCom.plcDataHandler(None)
 
 # Set up the server with host 127.0.0.1, port 502, and the created data manager
 #server = modbusTcpCom.modbusTcpServer(hostIp=hostIp, hostPort=hostPort, dataHandler=dataMgr)

@@ -1,0 +1,35 @@
+#version: '3.9'
+
+services:
+  plc1:
+    build: modbus_plc
+    container_name: plc_server_test
+    stdin_open: true
+    tty: true 
+    privileged: true
+    command: ["python3", "modbusServer.py"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.10.11
+  
+  plc2:
+    build: modbus_plc
+    container_name: plc_client_test
+    stdin_open: true
+    tty: true 
+    privileged: true
+    command: ["python3", "modbusClient.py", "192.168.10.11"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.10.21
+
+networks:
+  vlan1:
+    driver: bridge
+    name: ics_sim_net
+    ipam:
+     config:
+       - subnet: 192.168.10.0/24
+         gateway: 192.168.10.1
+    driver_opts:
+      com.docker.network.bridge.name: br_ics_sim_net

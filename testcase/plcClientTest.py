@@ -35,20 +35,20 @@ if os.path.exists(gLibDir):
 #-----------------------------------------------------------------------------
 print("Test import lib: ")
 try:
-    import modbusTcpCom
+    from modbusPLC import modbusTcpCom
 except ImportError as err:
     print("Import error: %s" % str(err))
     exit()
 print("- pass")
 
 #-----------------------------------------------------------------------------
-hostIp = '127.0.0.1'
+hostIp = '192.168.10.11'
 hostPort = 502
 
 client = modbusTcpCom.modbusTcpClient(hostIp)
 print('\nTestcase 01: test modbus server connection.')
 while not client.checkConn():
-    print('try connect to the PLC')
+    print('Try connect to the PLC: %s' %hostIp)
     print(client.getCoilsBits(0, 4))
     time.sleep(0.5)
 print('- pass')
