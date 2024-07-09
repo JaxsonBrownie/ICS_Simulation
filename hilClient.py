@@ -81,6 +81,18 @@ if __name__ == '__main__':
     _logger.info("Starting Transfer Switch Thread")
     tw_tp.start()
 
+    title = """
+        -------------------
+        _   _ _____ _     
+        | | | |_   _| |    
+        | |_| | | | | |    
+        |  _  | | | | |    
+        | | | |_| |_| |____
+        \_| |_/\___/\_____/
+        -------------------
+        """
+    print(title)
+
     while True:
         # loop until stopped
         pass

@@ -57,15 +57,14 @@ if __name__ == '__main__':
 
     _logger.info("Starting HMI Client")
     title = """
-        -------------------------
-        ______ _     _____   __  
-        | ___ \ |   /  __ \ /  | 
-        | |_/ / |   | /  \/ `| | 
-        |  __/| |   | |      | | 
-        | |   | |___| \__/\ _| |_
-        \_|   \_____/\____/ \___/
-        -------------------------
-        
+        ---------------------------
+        _   _ ___  ________   __  
+        | | | ||  \/  |_   _| /  | 
+        | |_| || .  . | | |   `| | 
+        |  _  || |\/| | | |    | | 
+        | | | || |  | |_| |_  _| |_
+        \_| |_/\_|  |_/\___/  \___/
+        ---------------------------
         """
     while True:
         # clear terminal
@@ -74,7 +73,7 @@ if __name__ == '__main__':
 
         with lock:
             print("=============================================================")
-            print(f"Current reading from the solar panel power meter: {holding_regs[0]}")
+            print(f"Current reading from the solar panel power meter (mW): {holding_regs[0]}")
             if coils[0]:
                 print("Power supply input: Solar Panels")
             else:

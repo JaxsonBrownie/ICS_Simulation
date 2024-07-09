@@ -37,6 +37,17 @@ if __name__ == '__main__':
     # init modbus server
     server = ModbusServer(host=ip, port=port, data_bank=CustomDataBank())
 
+    title = """
+        -------------------------
+        ______ _     _____   __  
+        | ___ \ |   /  __ \ /  | 
+        | |_/ / |   | /  \/ `| | 
+        |  __/| |   | |      | | 
+        | |   | |___| \__/\ _| |_
+        \_|   \_____/\____/ \___/
+        -------------------------
+        """
+    print(title)
     _logger.info(f"Starting server on {ip}:{port}")
     server.start()
 
