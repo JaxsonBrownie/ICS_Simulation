@@ -3,11 +3,13 @@
 import time
 import logging
 import sys
+import os
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 
 # set global variables
 holding_regs = []
+coils = []
 lock = Lock()
 
 # create logger
@@ -21,49 +23,74 @@ _logger.addHandler(console_handler)
 
 ################################################################################
 
-"""Sets up the client with attributes"""
-def setup_client():
-    client_attributes = {}
-    
-    client_attributes["target_ip"] = "127.0.0.1"
-    client_attributes["port"] = 5020
-    client_attributes["unit_id"] = 1
-
-    return client_attributes
-
-################################################################################
-
-"""A simple thread to simulate a HIL"""
-def hardware_in_loop(attributes):
-    global holding_regs, lock
-
-    # init modbus client
-    client = ModbusClient(host=attributes["target_ip"], port=attributes["port"], unit_id=attributes["unit_id"])
+"""A simple thread to simulate a HMI"""
+def hardware_in_loop(client : ModbusClient):
+    global holding_regs, coils, lock
 
     # polling loop
     while True:
-        reg_list = client.read_holding_registers(0, 10)
+        coil_list = client.read_coils(10, 1)
+        reg_list = client.read_holding_registers(20, 1)
 
-        # if read is ok, store result in global var (with thread lock)
+        # store recorded values
         if reg_list:
             with lock:
                 holding_regs = list(reg_list)
-        time.sleep(1)
+
+        if coil_list:
+            with lock:
+                coils = list(coil_list)
+
+        # delay between polls
+        time.sleep(0.5)
 
 ################################################################################
 
 if __name__ == '__main__':
-    # setup the client
-    client_attributes = setup_client()
+    # init modbus client
+    client = ModbusClient(host="127.0.0.1", port=5020, unit_id=1)
 
     # start the HIL client thread
-    tp = Thread(target=hardware_in_loop, args=(client_attributes,))
+    tp = Thread(target=hardware_in_loop, args=(client,))
     tp.daemon = True # to kill the thread when the main thread exits
     tp.start()
 
     _logger.info("Starting HMI Client")
+    title = """
+        -------------------------
+        ______ _     _____   __  
+        | ___ \ |   /  __ \ /  | 
+        | |_/ / |   | /  \/ `| | 
+        |  __/| |   | |      | | 
+        | |   | |___| \__/\ _| |_
+        \_|   \_____/\____/ \___/
+        -------------------------
+        
+        """
     while True:
-        with lock:
-            print(holding_regs)
+        # clear terminal
+        os.system('clear')
+        print(title)
 
-        time.sleep(1)
+        with lock:
+            print("=============================================================")
+            print(f"Current reading from the solar panel power meter: {holding_regs[0]}")
+            if coils[0]:
+                print("Power supply input: Solar Panels")
+            else:
+                print("Power supply input: Mains Power")
+            print("=============================================================")
+            print()
+            print()
+            print()
+            print()
+            print()
+            print()
+            print()
+            print("----------------------------")
+            print("| Raw Modbus Input:")
+            print(f"| holding registers: {holding_regs}")
+            print(f"| coils: {coils}")
+            print("----------------------------")
+
+        time.sleep(0.5)
