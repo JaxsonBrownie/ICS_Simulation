@@ -5,9 +5,9 @@ import logging
 import sys
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
+from solarSimulation import generate_norm_power
 
 # set global variables
-holding_regs = []
 lock = Lock()
 
 # create logger
@@ -37,17 +37,16 @@ def setup_client():
 def hardware_in_loop(attributes):
     global holding_regs, lock
 
+    # generate set of data to represent solar power
+    solar_power = generate_norm_power()
+
     # init modbus client
     client = ModbusClient(host=attributes["target_ip"], port=attributes["port"], unit_id=attributes["unit_id"])
 
     # polling loop
     while True:
-        reg_list = client.read_holding_registers(0, 10)
-
-        # if read is ok, store result in global var (with thread lock)
-        if reg_list:
-            with lock:
-                holding_regs = list(reg_list)
+        with lock:
+            client.write_single_register(0, 1)
         time.sleep(1)
 
 ################################################################################
@@ -61,9 +60,6 @@ if __name__ == '__main__':
     tp.daemon = True # to kill the thread when the main thread exits
     tp.start()
 
-    _logger.info("Starting HMI Client")
+    _logger.info("Starting HIL Client")
     while True:
-        with lock:
-            print(holding_regs)
-
-        time.sleep(1)
+        pass
