@@ -59,26 +59,6 @@ def plc_server(server : ModbusServer):
 
 ################################################################################
 
-"""Thread for the PLC client"""
-#def plc_client(client : ModbusClient):
-#    _logger.info(f"Starting PLC1 Client")
-#    global lock, solar_panel_pm
-
-    # polling loop
-#    while True:
-#        reg_list = client.read_holding_registers(20, 1)
-
-        # store recorded values
-#        if reg_list:
-#            with lock:
-                # store solar panel power meter readings
-#                solar_panel_pm = reg_list[0]
-
-        # delay between polls
-#        time.sleep(0.5)
-
-################################################################################
-
 if __name__ == '__main__':
     server_ip = "127.0.0.1"
     server_port = 5020
@@ -102,24 +82,15 @@ if __name__ == '__main__':
     # init modbus server
     server = ModbusServer(host=server_ip, port=server_port, data_bank=DataBankLogic())
 
-    # init modbus client
-#    client = ModbusClient(host=client_target_ip, port=client_target_port, unit_id=1)
-
     # start the PLC server thread
     tp_server = Thread(target=plc_server, args=(server,))
     tp_server.daemon = True
     tp_server.start()
-    
-    # start the PLC client thread
-#    tp_client = Thread(target=plc_client, args=(client,))
-#    tp_client.daemon = True
-#    tp_client.start()
 
     while True:
         with lock:
             print()
         
         time.sleep(1)
-
 
 ################################################################################
