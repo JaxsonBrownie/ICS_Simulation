@@ -38,9 +38,7 @@ class DataBankLogic(DataBank):
 
     """
     Private Function: transfer_switch_logic
-    Purpose: Simulates the transfer swtich logic. When the supplied milliwattage
-        from the holding register is below the given power
-        threshold, power input will switch to mains and vice versa via given coil.
+    Purpose: Simulates the transfer swtich logic
     """
     def __transfer_switch_logic(self, power, power_thresh, switch_addr):
         # check whether need to switch to mains (0) or keep solar (1)

@@ -42,6 +42,7 @@ def power_meter(client : ModbusClient, pm_data):
 ################################################################################
 
 """Generates a set of power (mW) values to represent a solar panels efficency over 24 hours"""
+#TODO: Create this as a seperate HIL component using UDP electrical signal simulation
 def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, hours=24):
     # Note: power_const of 10.5 generates generic normal for a typical 2W rated solar panel
 
