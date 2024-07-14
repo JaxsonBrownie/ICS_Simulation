@@ -1,31 +1,35 @@
 services:
-  plc1:
+  hmi1:
     build: containers/hmi1
     container_name: HMI1
-    stdin_open: true
-    tty: true 
-    privileged: true
-    command: ["python3", "HMI1.py"]
+    command: ["python3", "HMI1.py", "192.168.0.21"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.11
-  
-  plc2:
-    build: containers/hmi2
-    container_name: HMI2
-    stdin_open: true
-    tty: true 
-    privileged: true
-    command: ["python3", "modbusClient.py", "192.168.0.11"]
+
+  plc1:
+    build: containers/plc1
+    container_name: PLC1
+    command: ["python3", "PLC1.py"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
 
+  powermeter:
+    build: containers/power-meter
+    container_name: PowerMeter
+    command: ["python3", "PowerMeter.py", "192.168.0.21"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.31
 
-
-
-
-
+  transferswitch:
+    build: containers/transfer-switch
+    container_name: TransferSwitch
+    command: ["python3", "TransferSwitch.py", "192.168.0.21"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.32
 
 
 networks:

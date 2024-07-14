@@ -57,8 +57,15 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 ################################################################################
 
 if __name__ == '__main__':
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
+    
+    target_ip = sys.argv[1]
+
     # init modbus client
-    client = ModbusClient(host="127.0.0.1", port=5020, unit_id=1)
+    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
 
     # generate dataset to simulate power meter recordings
     pm_data = _generate_norm_power()
