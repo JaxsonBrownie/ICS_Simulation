@@ -47,8 +47,15 @@ def hardware_in_loop(client : ModbusClient):
 ################################################################################
 
 if __name__ == '__main__':
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
+    
+    target_ip = sys.argv[1]
+
     # init modbus client
-    client = ModbusClient(host="127.0.0.1", port=5020, unit_id=1)
+    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
 
     # start the HIL client thread
     tp = Thread(target=hardware_in_loop, args=(client,))

@@ -5,7 +5,6 @@ import sys
 from threading import Thread, Lock
 import time
 from pyModbusTCP.server import ModbusServer, DataBank
-from pyModbusTCP.client import ModbusClient
 
 # set global variables
 #solar_panel_pm = []

@@ -3,10 +3,7 @@
 import time
 import logging
 import sys
-import os
-import numpy as np
 from enum import Enum
-from scipy.stats import norm
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 

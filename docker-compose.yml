@@ -1,27 +1,32 @@
-#version: '3.9'
-
 services:
   plc1:
-    build: modbus_plc
-    container_name: plc_server_test
+    build: containers/hmi1
+    container_name: HMI1
     stdin_open: true
     tty: true 
     privileged: true
-    command: ["python3", "modbusServer.py"]
+    command: ["python3", "HMI1.py"]
     networks:
       vlan1:
-        ipv4_address: 192.168.10.11
+        ipv4_address: 192.168.0.11
   
   plc2:
-    build: modbus_plc
-    container_name: plc_client_test
+    build: containers/hmi2
+    container_name: HMI2
     stdin_open: true
     tty: true 
     privileged: true
-    command: ["python3", "modbusClient.py", "192.168.10.11"]
+    command: ["python3", "modbusClient.py", "192.168.0.11"]
     networks:
       vlan1:
-        ipv4_address: 192.168.10.21
+        ipv4_address: 192.168.0.21
+
+
+
+
+
+
+
 
 networks:
   vlan1:
@@ -29,7 +34,7 @@ networks:
     name: ics_sim_net
     ipam:
      config:
-       - subnet: 192.168.10.0/24
-         gateway: 192.168.10.1
+       - subnet: 192.168.0.0/24
+         gateway: 192.168.0.1
     driver_opts:
       com.docker.network.bridge.name: br_ics_sim_net

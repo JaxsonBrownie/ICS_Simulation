@@ -3,7 +3,6 @@
 import time
 import logging
 import sys
-import os
 import numpy as np
 from scipy.stats import norm
 from threading import Thread, Lock
