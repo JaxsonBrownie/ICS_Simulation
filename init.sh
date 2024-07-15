@@ -41,4 +41,4 @@ docker compose build
 
 # Start Docker Compose in detached mode
 echo "Starting containers"
-docker compose up -d
+docker compose up $1

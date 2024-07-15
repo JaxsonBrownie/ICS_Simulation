@@ -1,8 +1,24 @@
 services:
+  transferswitch:
+    build: containers/transferswitch
+    container_name: TransferSwitch
+    command: ["python3", "TransferSwitch.py", "192.168.0.21"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.32
+
+  powermeter:
+    build: containers/powermeter
+    container_name: PowerMeter
+    command: ["python3", "PowerMeter.py", "192.168.0.21"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.31
+
   plc1:
     build: containers/plc1
     container_name: PLC1
-    command: ["python3", "PLC1.py"]
+    command: ["python3", "PLC1.py", "192.168.0.31", "192.168.0.32"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
@@ -15,21 +31,6 @@ services:
       vlan1:
         ipv4_address: 192.168.0.11
 
-  powermeter:
-    build: containers/powermeter
-    container_name: PowerMeter
-    command: ["python3", "PowerMeter.py", "192.168.0.21"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.31
-
-  transferswitch:
-    build: containers/transferswitch
-    container_name: TransferSwitch
-    command: ["python3", "TransferSwitch.py", "192.168.0.21"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.32
 
 
 networks:

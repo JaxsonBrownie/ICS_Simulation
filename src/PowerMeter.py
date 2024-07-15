@@ -7,9 +7,10 @@ import numpy as np
 from scipy.stats import norm
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
+from pyModbusTCP.server import ModbusServer, DataBank
 
 # set global variables
-lock = Lock()
+#lock = Lock()
 
 # create logger
 _logger = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ _logger.addHandler(console_handler)
 ################################################################################
 
 """Thread to simulate power meter sensor data writing"""
-def power_meter(client : ModbusClient, pm_data):
-    global lock
+def power_meter(server : ModbusServer, data_bank : DataBank, pm_data):
+    server.start()
 
     incr = -1
     while True:
@@ -32,10 +33,9 @@ def power_meter(client : ModbusClient, pm_data):
         incr += 1
         if incr >= len(pm_data): incr = 0
 
-        # write to holding register address 20 value of solar panel meter (40021)
-        _logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
-        with lock:
-            client.write_single_register(20, int(pm_data[incr]))
+        # write to input register address 20 value of solar panel meter (40021)
+        data_bank.set_input_registers(20, [int(pm_data[incr])])
+        _logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {data_bank.get_input_registers(20, 1)}")
         time.sleep(0.2)
 
 ################################################################################
@@ -56,25 +56,22 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 ################################################################################
 
 if __name__ == '__main__':
-    # verify args
-    if len(sys.argv) < 2:
-        print("Incorrect number of arguments")
-        exit(1)
-    
-    target_ip = sys.argv[1]
-
-    # init modbus client
-    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
+    server_ip = "0.0.0.0"
+    server_port = 5020
 
     # generate dataset to simulate power meter recordings
     pm_data = _generate_norm_power()
 
-    # start the HIL client thread
-    tp = Thread(target=power_meter, args=(client, pm_data))
-    tp.daemon = True # to kill the thread when the main thread exits
-    tp.start()
+    # init modbus server
+    data_bank = DataBank()
+    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
 
-    _logger.info("Starting HMI Client")
+    # start the server thread
+    tp_server = Thread(target=power_meter, args=(server, data_bank, pm_data))
+    tp_server.daemon = True
+    tp_server.start()
+
+    _logger.info("Starting Power Meter")
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -85,4 +82,4 @@ if __name__ == '__main__':
     print(title)
 
     while True:
-        time.sleep(0.5)
+        time.sleep(0.4)

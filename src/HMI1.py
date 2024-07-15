@@ -30,7 +30,7 @@ def hardware_in_loop(client : ModbusClient):
     # polling loop
     while True:
         coil_list = client.read_coils(10, 1)
-        reg_list = client.read_holding_registers(20, 1)
+        reg_list = client.read_input_registers(20, 1)
 
         # store recorded values
         if reg_list:
@@ -77,15 +77,9 @@ if __name__ == '__main__':
         """
     
     while True:
-        # clear terminal
-        #os.system('clear')
         _logger.info(f"Solar Panel Power Meter (mW): {holding_regs[0]}")
-        if coils[0]:
-            _logger.info("Power supply input: Solar Panels")
-        else:
-            _logger.info("Power supply input: Mains Power")
+        _logger.info(f"Transfer Switch (Mains/Solar): {coils[0]}")
 
-        #_logger.info("Starting HMI Client")
         '''
         with lock:
             print("=============================================================")
@@ -109,4 +103,4 @@ if __name__ == '__main__':
             print("----------------------------")
             '''
 
-        time.sleep(1.1)
+        time.sleep(1)

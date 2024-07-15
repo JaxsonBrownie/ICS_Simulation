@@ -6,9 +6,10 @@ import sys
 from enum import Enum
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
+from pyModbusTCP.server import ModbusServer, DataBank
 
 # set global variables
-lock = Lock()
+#lock = Lock()
 
 # enum to represent the switch state
 class TRANSFER_SWITCH(Enum):
@@ -26,53 +27,43 @@ _logger.addHandler(console_handler)
 
 ################################################################################
 
-"""Thread to simulate the transfer switch"""
-def transfer_switch(client : ModbusClient):
-    global lock
+"""Thread to simulate the transfer switch actuator"""
+def transfer_switch(server : ModbusServer, data_bank : DataBank):
+    server.start()
+
     switch_value = TRANSFER_SWITCH.MAINS
-    power_output = 0
 
     while True:
         # read the switch coil
-        switch_coil = client.read_coils(10, 1)
+        switch_coil = data_bank.get_coils(10, 1)
 
         # set the constant
         if switch_coil:
-            with lock:
-                if switch_coil[0]:
-                    switch_value = TRANSFER_SWITCH.SOLAR
-                else:
-                    switch_value = TRANSFER_SWITCH.MAINS
+            if switch_coil[0]:
+                switch_value = TRANSFER_SWITCH.SOLAR
+            else:
+                switch_value = TRANSFER_SWITCH.MAINS
+            _logger.info(f"TRANSFER SWITCH COIL: {switch_coil[0]}")
         _logger.info(f"TRANSFER SWITCH: {switch_value}")
-
-        # simulate the power switch
-        if switch_value == TRANSFER_SWITCH.MAINS:
-            power_output = 833
-        else:
-            power_output = client.read_holding_registers(20, 1)[0]
-        _logger.info(f"TRANSFER SWITCH POWER: {power_output} mW")
 
         time.sleep(2)
 
 ################################################################################
 
 if __name__ == '__main__':
-    # verify args
-    if len(sys.argv) < 2:
-        print("Incorrect number of arguments")
-        exit(1)
-    
-    target_ip = sys.argv[1]
+    server_ip = "0.0.0.0"
+    server_port = 5020
 
-    # init modbus client
-    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
+    # init modbus server
+    data_bank = DataBank()
+    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
 
-    # start the HIL client thread
-    tp = Thread(target=transfer_switch, args=(client,))
-    tp.daemon = True # to kill the thread when the main thread exits
-    tp.start()
+    # start the server thread
+    tp_server = Thread(target=transfer_switch, args=(server, data_bank))
+    tp_server.daemon = True
+    tp_server.start()
 
-    _logger.info("Starting HMI Client")
+    _logger.info("Starting Transfer Switch")
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
