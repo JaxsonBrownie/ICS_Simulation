@@ -8,6 +8,10 @@ RUN apt-get install -y python3 \
     && apt-get install -y python3-pip 
 
 RUN pip3 install pyModbusTCP
+RUN pip3 install scipy
+
+# Set TERM environment variable
+ENV TERM xterm-256color
 
 # Copy container source code
 WORKDIR /src

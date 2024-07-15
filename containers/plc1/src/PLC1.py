@@ -5,6 +5,7 @@ import sys
 from threading import Thread, Lock
 import time
 from pyModbusTCP.server import ModbusServer, DataBank
+from pyModbusTCP.client import ModbusClient
 
 # set global variables
 #solar_panel_pm = []
@@ -61,6 +62,9 @@ def plc_server(server : ModbusServer):
 if __name__ == '__main__':
     server_ip = "0.0.0.0"
     server_port = 5020
+
+    #client_target_ip = "127.0.0.1"
+    #client_target_port = 5020
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """

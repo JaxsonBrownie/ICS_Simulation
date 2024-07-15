@@ -8,8 +8,8 @@ from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 
 # set global variables
-holding_regs = []
-coils = []
+holding_regs = [0]
+coils = [False]
 lock = Lock()
 
 # create logger
@@ -47,15 +47,22 @@ def hardware_in_loop(client : ModbusClient):
 ################################################################################
 
 if __name__ == '__main__':
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
+    
+    target_ip = sys.argv[1]
+
     # init modbus client
-    client = ModbusClient(host="127.0.0.1", port=5020, unit_id=1)
+    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
 
     # start the HIL client thread
+    _logger.info("Starting HMI Client")
     tp = Thread(target=hardware_in_loop, args=(client,))
     tp.daemon = True # to kill the thread when the main thread exits
     tp.start()
 
-    _logger.info("Starting HMI Client")
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -68,11 +75,18 @@ if __name__ == '__main__':
         |_|  |_|_|  |_|_____||_|
         ---------------------------
         """
+    
     while True:
         # clear terminal
-        os.system('clear')
-        print(title)
+        #os.system('clear')
+        _logger.info(f"Solar Panel Power Meter (mW): {holding_regs[0]}")
+        if coils[0]:
+            _logger.info("Power supply input: Solar Panels")
+        else:
+            _logger.info("Power supply input: Mains Power")
 
+        #_logger.info("Starting HMI Client")
+        '''
         with lock:
             print("=============================================================")
             print(f"Current reading from the solar panel power meter (mW): {holding_regs[0]}")
@@ -93,5 +107,6 @@ if __name__ == '__main__':
             print(f"| holding registers: {holding_regs}")
             print(f"| coils: {coils}")
             print("----------------------------")
+            '''
 
-        time.sleep(0.5)
+        time.sleep(1.1)

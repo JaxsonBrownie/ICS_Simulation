@@ -1,12 +1,4 @@
 services:
-  hmi1:
-    build: containers/hmi1
-    container_name: HMI1
-    command: ["python3", "HMI1.py", "192.168.0.21"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.11
-
   plc1:
     build: containers/plc1
     container_name: PLC1
@@ -15,8 +7,16 @@ services:
       vlan1:
         ipv4_address: 192.168.0.21
 
+  hmi1:
+    build: containers/hmi1
+    container_name: HMI1
+    command: ["python3", "HMI1.py", "192.168.0.21"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.11
+
   powermeter:
-    build: containers/power-meter
+    build: containers/powermeter
     container_name: PowerMeter
     command: ["python3", "PowerMeter.py", "192.168.0.21"]
     networks:
@@ -24,7 +24,7 @@ services:
         ipv4_address: 192.168.0.31
 
   transferswitch:
-    build: containers/transfer-switch
+    build: containers/transferswitch
     container_name: TransferSwitch
     command: ["python3", "TransferSwitch.py", "192.168.0.21"]
     networks:

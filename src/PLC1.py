@@ -60,11 +60,11 @@ def plc_server(server : ModbusServer):
 ################################################################################
 
 if __name__ == '__main__':
-    server_ip = "127.0.0.1"
+    server_ip = "0.0.0.0"
     server_port = 5020
 
-    client_target_ip = "127.0.0.1"
-    client_target_port = 5020
+    #client_target_ip = "127.0.0.1"
+    #client_target_port = 5020
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
