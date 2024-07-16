@@ -18,7 +18,7 @@ services:
   plc1:
     build: containers/plc1
     container_name: PLC1
-    command: ["python3", "PLC1.py", "192.168.0.31", "192.168.0.32"]
+    command: ["python3", "PLC.py", "192.168.0.31", "192.168.0.32"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
