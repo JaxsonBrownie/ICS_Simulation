@@ -43,7 +43,6 @@ def transfer_switch(server : ModbusServer, data_bank : DataBank):
                 switch_value = TRANSFER_SWITCH.SOLAR
             else:
                 switch_value = TRANSFER_SWITCH.MAINS
-            _logger.info(f"TRANSFER SWITCH COIL: {switch_coil[0]}")
         _logger.info(f"TRANSFER SWITCH: {switch_value}")
 
         time.sleep(2)

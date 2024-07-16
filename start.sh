@@ -2,6 +2,7 @@
 # Run this script to create all the docker containers and to start them through Docker Compose
 # Ensure Docker and Docker Compose is install on the host system
 
+rm -r containers
 mkdir containers > /dev/null 2>&1
 
 # Function to create a container directory
@@ -24,7 +25,7 @@ create_container HMI1 HMI1.py
 #create_container HMI2 HMI2.py
 
 # PLC1
-create_container PLC1 PLC1.py
+create_container PLC1 PLC.py
 
 # PLC2
 #create_container PLC2 PLC2.py
