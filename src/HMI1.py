@@ -8,9 +8,13 @@ from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 
 # set global variables
-holding_regs = [0]
-coils = [False]
-lock = Lock()
+plc1_holding_regs = [0]
+plc1_coils = [False]
+plc1_lock = Lock()
+
+plc2_holding_regs = [0]
+plc2_coils = [False]
+plc2_lock = Lock()
 
 # create logger
 _logger = logging.getLogger(__name__)
@@ -23,23 +27,46 @@ _logger.addHandler(console_handler)
 
 ################################################################################
 
-"""A simple thread to simulate a HMI"""
-def hardware_in_loop(client : ModbusClient):
-    global holding_regs, coils, lock
+"""PLC1 HMI client thread"""
+def plc1_client(client : ModbusClient):
+    global plc1_holding_regs, plc1_coils, plc1_lock
 
     # polling loop
     while True:
-        coil_list = client.read_coils(10, 1)
         reg_list = client.read_input_registers(20, 1)
+        coil_list = client.read_coils(10, 1)
 
         # store recorded values
         if reg_list:
-            with lock:
-                holding_regs = list(reg_list)
+            with plc1_lock:
+                plc1_holding_regs = list(reg_list)
 
         if coil_list:
-            with lock:
-                coils = list(coil_list)
+            with plc1_lock:
+                plc1_coils = list(coil_list)
+
+        # delay between polls
+        time.sleep(0.5)
+
+################################################################################
+
+"""PLC1 HMI client thread"""
+def plc2_client(client : ModbusClient):
+    global plc2_holding_regs, plc2_coils, plc2_lock
+
+    # polling loop
+    while True:
+        reg_list = client.read_input_registers(20, 1)
+        coil_list = client.read_coils(10, 1)
+
+        # store recorded values
+        if reg_list:
+            with plc2_lock:
+                plc2_holding_regs = list(reg_list)
+
+        if coil_list:
+            with plc2_lock:
+                plc2_coils = list(coil_list)
 
         # delay between polls
         time.sleep(0.5)
@@ -48,21 +75,30 @@ def hardware_in_loop(client : ModbusClient):
 
 if __name__ == '__main__':
     # verify args
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("Incorrect number of arguments")
         exit(1)
     
-    target_ip = sys.argv[1]
+    client1_ip = sys.argv[1]
+    client2_ip = sys.argv[2]
 
-    # init modbus client
-    client = ModbusClient(host=target_ip, port=5020, unit_id=1)
+    # init modbus PLC1 client
+    client1 = ModbusClient(host=client1_ip, port=5020, unit_id=1)
 
-    # start the HIL client thread
-    _logger.info("Starting HMI Client")
-    tp = Thread(target=hardware_in_loop, args=(client,))
+    # start the PLC1 client thread
+    _logger.info(f"Starting PLC1 HMI Client: {client1_ip}")
+    tp = Thread(target=plc1_client, args=(client1,))
     tp.daemon = True # to kill the thread when the main thread exits
     tp.start()
 
+    # init modbus PLC2 client
+    client2 = ModbusClient(host=client2_ip, port=5020, unit_id=1)
+
+    # start the PLC2 client thread
+    _logger.info(f"Starting PLC2 HMI Client: {client2_ip}")
+    tp = Thread(target=plc2_client, args=(client2,))
+    tp.daemon = True # to kill the thread when the main thread exits
+    tp.start()
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -77,30 +113,9 @@ if __name__ == '__main__':
         """
     
     while True:
-        _logger.info(f"Solar Panel Power Meter (mW): {holding_regs[0]}")
-        _logger.info(f"Transfer Switch (Mains/Solar): {coils[0]}")
-
-        '''
-        with lock:
-            print("=============================================================")
-            print(f"Current reading from the solar panel power meter (mW): {holding_regs[0]}")
-            if coils[0]:
-                print("Power supply input: Solar Panels")
-            else:
-                print("Power supply input: Mains Power")
-            print("=============================================================")
-            print()
-            print()
-            print()
-            print()
-            print()
-            print()
-            print()
-            print("----------------------------")
-            print("| Raw Modbus Input:")
-            print(f"| holding registers: {holding_regs}")
-            print(f"| coils: {coils}")
-            print("----------------------------")
-            '''
+        _logger.info(f"PLC1 Solar Panel Power Meter (mW): {plc1_holding_regs[0]}")
+        _logger.info(f"PLC1 Transfer Switch (Mains/Solar): {plc1_coils[0]}")
+        _logger.info(f"PLC2 Solar Panel Power Meter (mW): {plc2_holding_regs[0]}")
+        _logger.info(f"PLC2 Transfer Switch (Mains/Solar): {plc2_coils[0]}")
 
         time.sleep(1)

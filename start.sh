@@ -3,16 +3,16 @@
 # Ensure Docker and Docker Compose is install on the host system
 
 rm -r containers
-mkdir containers > /dev/null 2>&1
+mkdir containers
 
 # Function to create a container directory
 create_container() {
     echo "Creating directory structure for $1"
     lowercase=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-    rm -r containers/$lowercase > /dev/null
-    mkdir containers/$lowercase > /dev/null
-    mkdir containers/$lowercase/src > /dev/null
+    rm -r containers/$lowercase
+    mkdir containers/$lowercase
+    mkdir containers/$lowercase/src
 
     cp src/$2 containers/$lowercase/src
     cp docker-files/Dockerfile containers/$lowercase
@@ -28,13 +28,19 @@ create_container HMI1 HMI1.py
 create_container PLC1 PLC.py
 
 # PLC2
-#create_container PLC2 PLC2.py
+create_container PLC2 PLC.py
 
-# PowerMeter
-create_container PowerMeter PowerMeter.py
+# PowerMeter1
+create_container PowerMeter1 PowerMeter.py
 
-# TransferSwitch
-create_container TransferSwitch TransferSwitch.py
+# PowerMeter2
+create_container PowerMeter2 PowerMeter.py
+
+# TransferSwitch1
+create_container TransferSwitch1 TransferSwitch.py
+
+# TransferSwitch2
+create_container TransferSwitch2 TransferSwitch.py
 
 # Build containers
 echo "Building containers"

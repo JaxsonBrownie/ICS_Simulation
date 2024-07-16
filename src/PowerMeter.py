@@ -6,7 +6,6 @@ import sys
 import numpy as np
 from scipy.stats import norm
 from threading import Thread, Lock
-from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer, DataBank
 
 # set global variables
