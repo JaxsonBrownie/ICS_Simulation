@@ -1,11 +1,12 @@
-from pymodbus.server import StartSerialServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer
+#!/usr/bin/env python3
+
 import random
 import time
 import threading
+from pymodbus.server import StartSerialServer
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
+from pymodbus.transaction import ModbusRtuFramer
 
 # Function to update the temperature value in the Modbus register
 def update_temperature_data_block(data_block):
@@ -22,17 +23,17 @@ def update_temperature_data_block(data_block):
 data_block = ModbusSequentialDataBlock(0, [250])  # Initial temperature 25.0°C
 
 # Create a Modbus slave context with the data block
-store = ModbusSlaveContext(hr=data_block, zero_mode=True)
+store = ModbusSlaveContext(hr=data_block, zero_mode=False)
 context = ModbusServerContext(slaves=store, single=True)
 
 # Create device identification (optional)
-identity = ModbusDeviceIdentification()
-identity.VendorName = 'MyCompany'
-identity.ProductCode = 'TS'
-identity.VendorUrl = 'http://mycompany.com'
-identity.ProductName = 'Temperature Sensor'
-identity.ModelName = 'TS-100'
-identity.MajorMinorRevision = '1.0'
+#identity = ModbusDeviceIdentification()
+#identity.VendorName = 'MyCompany'
+#identity.ProductCode = 'TS'
+#identity.VendorUrl = 'http://mycompany.com'
+#identity.ProductName = 'Temperature Sensor'
+#identity.ModelName = 'TS-100'
+#identity.MajorMinorRevision = '1.0'
 
 # Start the temperature update thread
 temperature_thread = threading.Thread(target=update_temperature_data_block, args=(data_block,))
@@ -40,4 +41,4 @@ temperature_thread.daemon = True
 temperature_thread.start()
 
 # Start the Modbus RTU server
-StartSerialServer(context=context, identity=identity, port='/dev/pts/5', baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+StartSerialServer(context=context, port='/dev/pts/5', baudrate=9600, timeout=1, framer=ModbusRtuFramer)
