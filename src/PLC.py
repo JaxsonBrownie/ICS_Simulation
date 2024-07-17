@@ -110,7 +110,7 @@ if __name__ == '__main__':
     client1 = ModbusClient(host=client1_ip, port=client_port, unit_id=1)
 
     # start the power meter client thread
-    _logger.info(f"Starting PLC1 Power Meter Client")
+    _logger.info(f"Starting PLC Power Meter Client")
     tp_client = Thread(target=plc_client_power_meter, args=(client1, data_bank))
     tp_client.daemon = True
     tp_client.start()
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     client2 = ModbusClient(host=client2_ip, port=client_port, unit_id=1)
 
     # start the transfer switch client thread
-    _logger.info(f"Starting PLC1 Transfer Switch Client")
+    _logger.info(f"Starting PLC Transfer Switch Client")
     tp_client = Thread(target=plc_client_transfer_switch, args=(client2, data_bank))
     tp_client.daemon = True
     tp_client.start()

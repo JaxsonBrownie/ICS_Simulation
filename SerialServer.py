@@ -154,7 +154,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('device', type=str, help='serial device (like /dev/ttyUSB0)')
     parser.add_argument('-H', '--host', type=str, default='localhost', help='host (default: localhost)')
-    parser.add_argument('-p', '--port', type=int, default=502, help='TCP port (default: 502)')
+    parser.add_argument('-p', '--port', type=int, default=5020, help='TCP port (default: 5020)')
     parser.add_argument('-b', '--baudrate', type=int, default=9600, help='serial rate (default is 9600)')
     parser.add_argument('-t', '--timeout', type=float, default=1.0, help='timeout delay (default is 1.0 s)')
     parser.add_argument('-e', '--eof', type=float, default=0.05, help='end of frame delay (default is 0.05 s)')
