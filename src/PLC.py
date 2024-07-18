@@ -7,6 +7,7 @@ from enum import Enum
 from threading import Thread, Lock
 from pyModbusTCP.server import ModbusServer, DataBank
 from pyModbusTCP.client import ModbusClient
+from pymodbus.client import ModbusSerialClient
 
 # enum to represent the switch state
 class TRANSFER_SWITCH(Enum):
@@ -34,25 +35,25 @@ def plc_server(server : ModbusServer):
 ################################################################################
 
 """Thread for the PLC client to the power meter"""
-def plc_client_power_meter(client : ModbusClient, data_bank : DataBank):
+def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank):
     while True:
         # read the power meter input register
-        pm_value = client.read_input_registers(20, 1)
+        pm_value = client.read_input_registers(20, 1, unit=1)
+        if not pm_value.isError():
+            # write the Modbus RTU power meter input to the Modbus TCP server memory (same address)
+            #_logger.info(f'Power Meter: {pm_value.registers} °C')
+            data_bank.set_input_registers(20, pm_value.registers)
 
-        # write the power meter input to the plc's server memory (same address)
-        if pm_value:
-            data_bank.set_input_registers(20, pm_value)
-
-        time.sleep(2)
+        time.sleep(0.1)
 
 ################################################################################
 
 """Thread for the PLC client to the transfer switch"""
-def plc_client_transfer_switch(client : ModbusClient, data_bank : DataBank):
+def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank):
     switch_value = TRANSFER_SWITCH.MAINS
 
     while True:
-        # read the power meter input register from data bank
+        # read the power meter input register from Modbus TCP server data bank
         pm_value = data_bank.get_input_registers(20, 1)
 
         # set the coil on the transfer switch depending on power output
@@ -61,12 +62,13 @@ def plc_client_transfer_switch(client : ModbusClient, data_bank : DataBank):
                 switch_value = TRANSFER_SWITCH.MAINS
             else:
                 switch_value = TRANSFER_SWITCH.SOLAR
-        client.write_single_coil(10, switch_value.value)
+        client.write_coil(10, switch_value.value)
+        #_logger.info(f'Transfer Switch: {switch_value.value}')
 
         # write coil transfer switch value to plc's server memory (same address)
         data_bank.set_coils(10, [switch_value.value])
 
-        time.sleep(1)
+        time.sleep(0.1)
 
 ################################################################################
 
@@ -79,9 +81,8 @@ if __name__ == '__main__':
     server_ip = "0.0.0.0"
     server_port = 5020
 
-    client1_ip = sys.argv[1]
-    client2_ip = sys.argv[2]
-    client_port = 5020
+    client1_com = sys.argv[1]
+    client2_com = sys.argv[2]
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -96,33 +97,47 @@ if __name__ == '__main__':
         """
     print(title)
 
+    #----------------------------------------------------------------------
     # init modbus server
     data_bank = DataBank()
     server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
 
     # start the PLC server thread
-    _logger.info(f"Starting PLC1 Server")
+    _logger.info(f"Starting PLC Server")
     tp_server = Thread(target=plc_server, args=(server,))
     tp_server.daemon = True
     tp_server.start()
 
+    #----------------------------------------------------------------------
     # init power meter modbus client
-    client1 = ModbusClient(host=client1_ip, port=client_port, unit_id=1)
+    pm_client = ModbusSerialClient(method='rtu', port=client1_com, baudrate=9600, timeout=1)
+    pm_client.connect()
 
     # start the power meter client thread
     _logger.info(f"Starting PLC Power Meter Client")
-    tp_client = Thread(target=plc_client_power_meter, args=(client1, data_bank))
+    tp_client = Thread(target=plc_client_power_meter, args=(pm_client, data_bank))
+    tp_client.daemon = True
+    tp_client.start()
+
+    #----------------------------------------------------------------------
+    # init transfer switch modbus client
+    ts_client = ModbusSerialClient(method='rtu', port=client2_com, baudrate=9600, timeout=1)
+    ts_client.connect()
+
+    # start the transfer switch client thread
+    _logger.info(f"Starting PLC Transfer Switch Client")
+    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank))
     tp_client.daemon = True
     tp_client.start()
 
     # init transfer switch modbus client
-    client2 = ModbusClient(host=client2_ip, port=client_port, unit_id=1)
+    #client2 = ModbusClient(host=client2_ip, port=client_port, unit_id=1)
 
     # start the transfer switch client thread
-    _logger.info(f"Starting PLC Transfer Switch Client")
-    tp_client = Thread(target=plc_client_transfer_switch, args=(client2, data_bank))
-    tp_client.daemon = True
-    tp_client.start()
+    #_logger.info(f"Starting PLC Transfer Switch Client")
+    #tp_client = Thread(target=plc_client_transfer_switch, args=(client2, data_bank))
+    #tp_client.daemon = True
+    #tp_client.start()
 
 
     while True:        

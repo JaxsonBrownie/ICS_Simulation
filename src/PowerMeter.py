@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 import logging
-import sys
 import numpy as np
 from scipy.stats import norm
-from threading import Thread, Lock
-from pyModbusTCP.server import ModbusServer, DataBank
-
-# set global variables
-#lock = Lock()
+from threading import Thread
+from pymodbus.server import StartSerialServer
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
+from pymodbus.transaction import ModbusRtuFramer
 
 # create logger
 _logger = logging.getLogger(__name__)
@@ -22,25 +21,7 @@ _logger.addHandler(console_handler)
 
 ################################################################################
 
-"""Thread to simulate power meter sensor data writing"""
-def power_meter(server : ModbusServer, data_bank : DataBank, pm_data):
-    server.start()
-
-    incr = -1
-    while True:
-        # control the increment
-        incr += 1
-        if incr >= len(pm_data): incr = 0
-
-        # write to input register address 20 value of solar panel meter (40021)
-        data_bank.set_input_registers(20, [int(pm_data[incr])])
-        #_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {data_bank.get_input_registers(20, 1)}")
-        time.sleep(0.2)
-
-################################################################################
-
 """Generates a set of power (mW) values to represent a solar panels efficency over 24 hours"""
-#TODO: Create this as a seperate HIL component using UDP electrical signal simulation
 def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, hours=24):
     # Note: power_const of 10.5 generates generic normal for a typical 2W rated solar panel
 
@@ -54,31 +35,44 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 
 ################################################################################
 
-if __name__ == '__main__':
-    server_ip = "0.0.0.0"
-    server_port = 5020
+"""Thread to simulate power meter sensor data writing"""
+def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
+    incr = -1
+    while True:
+        # control the increment
+        incr += 1
+        if incr >= len(pm_data): incr = 0
 
+        # write to input register address 20 value of solar panel meter (40021)
+        data_bank.setValues(20, [int(pm_data[incr])])
+        _logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
+        time.sleep(0.2)
+
+################################################################################
+
+if __name__ == '__main__':
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
+
+    client_com = sys.argv[1]
+    
     # generate dataset to simulate power meter recordings
     pm_data = _generate_norm_power()
 
-    # init modbus server
-    data_bank = DataBank()
-    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
+    # create input register default data block
+    data_block = ModbusSequentialDataBlock.create()
 
-    # start the server thread
-    tp_server = Thread(target=power_meter, args=(server, data_bank, pm_data))
+    # create a Modbus slave context with the data block
+    store = ModbusSlaveContext(ir=data_block, zero_mode=True)
+    context = ModbusServerContext(slaves=store, single=True)
+
+    # start the power meter measurement update thread
+    tp_server = Thread(target=power_meter, args=(data_block, pm_data))
     tp_server.daemon = True
     tp_server.start()
 
+    # start the Modbus RTU server
     _logger.info("Starting Power Meter")
-    
-    # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
-    title = """
-        ---------------------------
-        <todo>
-        ---------------------------
-        """
-    print(title)
-
-    while True:
-        time.sleep(0.4)
+    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)

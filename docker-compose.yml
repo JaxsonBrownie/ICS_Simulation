@@ -3,21 +3,18 @@ services:
   powermeter1:
     build: containers/powermeter1
     container_name: PowerMeter1
-    devices:
+    privileged: true
+    volumes:
       - "/dev/ttyS10:/dev/ttyS10"
     command: ["python3", "PowerMeter.py", "/dev/ttyS10"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.31
 
   transferswitch1:
     build: containers/transferswitch1
     container_name: TransferSwitch1
+    privileged: true
+    volumes:
       - "/dev/ttyS12:/dev/ttyS12"
     command: ["python3", "TransferSwitch.py", "/dev/ttyS12"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.32 # can probs remove
 
 
   #transferswitch2:
@@ -40,6 +37,10 @@ services:
   plc1:
     build: containers/plc1
     container_name: PLC1
+    privileged: true
+    volumes:
+      - "/dev/ttyS11:/dev/ttyS11"
+      - "/dev/ttyS13:/dev/ttyS13"
     command: ["python3", "PLC.py", "/dev/ttyS11", "/dev/ttyS13"]
     networks:
       vlan1:
@@ -61,7 +62,6 @@ services:
   #  networks:
   #    vlan1:
   #      ipv4_address: 192.168.0.11
-
 
 # Modbus TCP network
 networks:

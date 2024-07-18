@@ -5,8 +5,10 @@ import logging
 import sys
 from enum import Enum
 from threading import Thread, Lock
-from pyModbusTCP.client import ModbusClient
-from pyModbusTCP.server import ModbusServer, DataBank
+from pymodbus.server import StartSerialServer
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
+from pymodbus.transaction import ModbusRtuFramer
 
 # set global variables
 #lock = Lock()
@@ -28,14 +30,13 @@ _logger.addHandler(console_handler)
 ################################################################################
 
 """Thread to simulate the transfer switch actuator"""
-def transfer_switch(server : ModbusServer, data_bank : DataBank):
-    server.start()
-
+def transfer_switch(data_bank : ModbusSequentialDataBlock):
+    # default switch value
     switch_value = TRANSFER_SWITCH.MAINS
 
     while True:
         # read the switch coil
-        switch_coil = data_bank.get_coils(10, 1)
+        switch_coil = data_bank.getValues(10, 1)
 
         # set the constant
         if switch_coil:
@@ -50,27 +51,25 @@ def transfer_switch(server : ModbusServer, data_bank : DataBank):
 ################################################################################
 
 if __name__ == '__main__':
-    server_ip = "0.0.0.0"
-    server_port = 5020
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
 
-    # init modbus server
-    data_bank = DataBank()
-    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
+    client_com = sys.argv[1]
+    
+    # create coil default data block
+    data_block = ModbusSequentialDataBlock.create()
 
-    # start the server thread
-    tp_server = Thread(target=transfer_switch, args=(server, data_bank))
+    # create a Modbus slave context with the data block
+    store = ModbusSlaveContext(co=data_block, zero_mode=True)
+    context = ModbusServerContext(slaves=store, single=True)
+
+    # start the transfer switch thread
+    tp_server = Thread(target=transfer_switch, args=(data_block,))
     tp_server.daemon = True
     tp_server.start()
 
+    # start the Modbus RTU server
     _logger.info("Starting Transfer Switch")
-    
-    # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
-    title = """
-        ---------------------------
-        <todo>
-        ---------------------------
-        """
-    print(title)
-
-    while True:
-        time.sleep(1)
+    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
