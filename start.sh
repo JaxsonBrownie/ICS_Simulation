@@ -14,10 +14,16 @@ mkdir containers
 # Create the virtual serial ports
 echo "Creating virtual serial ports"
 rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13
+
 socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11 &
 serial1=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS12 pty,raw,echo=0,link=/dev/ttyS13 &
 serial2=$!
+socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
+serial3=$!
+socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
+serial4=$!
+
 sleep 2
 
 # Revoke sudo
@@ -39,8 +45,8 @@ create_container() {
 # Function to cleanup serial ports
 cleanup() {
     echo "Cleaning up serial ports"
-    kill $serial1 $serial2
-    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13
+    kill $serial1 $serial2 $serial3 $serial4
+    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 /dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
 }
 trap cleanup EXIT
 
@@ -54,19 +60,19 @@ trap cleanup EXIT
 create_container PLC1 PLC.py
 
 # PLC2
-#create_container PLC2 PLC.py
+create_container PLC2 PLC.py
 
 # PowerMeter1
 create_container PowerMeter1 PowerMeter.py
 
 # PowerMeter2
-#create_container PowerMeter2 PowerMeter.py
+create_container PowerMeter2 PowerMeter.py
 
 # TransferSwitch1
 create_container TransferSwitch1 TransferSwitch.py
 
 # TransferSwitch2
-#create_container TransferSwitch2 TransferSwitch.py
+create_container TransferSwitch2 TransferSwitch.py
 
 # Build containers
 echo "Building containers"
@@ -75,4 +81,4 @@ docker compose build
 # Start Docker Compose in detached mode
 echo "Starting containers"
 docker compose up $1
-wait $serial1 $serial2
+wait $serial1 $serial2 $serial3 $serial4

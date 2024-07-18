@@ -16,22 +16,22 @@ services:
       - "/dev/ttyS12:/dev/ttyS12"
     command: ["python3", "TransferSwitch.py", "/dev/ttyS12"]
 
+  powermeter2:
+    build: containers/powermeter2
+    container_name: PowerMeter2
+    privileged: true
+    volumes:
+      - "/dev/ttyS14:/dev/ttyS14"
+    command: ["python3", "PowerMeter.py", "/dev/ttyS14"]
 
-  #transferswitch2:
-  #  build: containers/transferswitch2
-  #  container_name: TransferSwitch2
-  #  command: ["python3", "TransferSwitch.py"]
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.34
+  transferswitch2:
+    build: containers/transferswitch2
+    container_name: TransferSwitch2
+    privileged: true
+    volumes:
+      - "/dev/ttyS16:/dev/ttyS16"
+    command: ["python3", "TransferSwitch.py", "/dev/ttyS16"]
 
-  #powermeter2:
-  #  build: containers/powermeter2
-  #  container_name: PowerMeter2
-  #  command: ["python3", "PowerMeter.py"]
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.33
 
   # PLCs
   plc1:
@@ -46,13 +46,17 @@ services:
       vlan1:
         ipv4_address: 192.168.0.21
         
-  #plc2:
-  #  build: containers/plc2
-  #  container_name: PLC2
-  #  command: ["python3", "PLC.py", "192.168.0.33", "192.168.0.34"]
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.22
+  plc2:
+    build: containers/plc2
+    container_name: PLC2
+    privileged: true
+    volumes:
+      - "/dev/ttyS15:/dev/ttyS15"
+      - "/dev/ttyS17:/dev/ttyS17"
+    command: ["python3", "PLC.py", "/dev/ttyS15", "/dev/ttyS17"]
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.22
 
   # HMIs
   #hmi1:
@@ -62,6 +66,7 @@ services:
   #  networks:
   #    vlan1:
   #      ipv4_address: 192.168.0.11
+
 
 # Modbus TCP network
 networks:
