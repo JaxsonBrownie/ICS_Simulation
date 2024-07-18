@@ -7,7 +7,6 @@ import numpy as np
 from scipy.stats import norm
 from threading import Thread
 from pymodbus.server import StartSerialServer
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer
 
@@ -23,7 +22,6 @@ _logger.addHandler(console_handler)
 ################################################################################
 
 """Generates a set of power (mW) values to represent a solar panels efficency over 24 hours"""
-#TODO: Create this as a seperate HIL component using UDP electrical signal simulation
 def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, hours=24):
     # Note: power_const of 10.5 generates generic normal for a typical 2W rated solar panel
 
@@ -39,7 +37,6 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 
 """Thread to simulate power meter sensor data writing"""
 def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
-
     incr = -1
     while True:
         # control the increment
@@ -54,31 +51,28 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
 ################################################################################
 
 if __name__ == '__main__':
+    # verify args
+    if len(sys.argv) < 2:
+        print("Incorrect number of arguments")
+        exit(1)
+
+    client_com = sys.argv[1]
+    
     # generate dataset to simulate power meter recordings
     pm_data = _generate_norm_power()
 
-    # create default data block
-    data_block1 = ModbusSequentialDataBlock.create()
-    data_block2 = ModbusSequentialDataBlock.create()
+    # create input register default data block
+    data_block = ModbusSequentialDataBlock.create()
 
     # create a Modbus slave context with the data block
-    store = ModbusSlaveContext(hr=data_block1, ir=data_block2, zero_mode=True)
+    store = ModbusSlaveContext(ir=data_block, zero_mode=True)
     context = ModbusServerContext(slaves=store, single=True)
 
-    # Create device identification (optional)
-    #identity = ModbusDeviceIdentification()
-    #identity.VendorName = 'MyCompany'
-    #identity.ProductCode = 'TS'
-    #identity.VendorUrl = 'http://mycompany.com'
-    #identity.ProductName = 'Temperature Sensor'
-    #identity.ModelName = 'TS-100'
-    #identity.MajorMinorRevision = '1.0'
-
     # start the power meter measurement update thread
-    tp_server = Thread(target=power_meter, args=(data_block1, pm_data))
+    tp_server = Thread(target=power_meter, args=(data_block, pm_data))
     tp_server.daemon = True
     tp_server.start()
 
     # start the Modbus RTU server
     _logger.info("Starting Power Meter")
-    StartSerialServer(context=context, port='/dev/pts/5', baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)

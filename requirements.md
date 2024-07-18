@@ -6,3 +6,6 @@
 Address space:
 - Coil 10 (00011) - solar (ON) mains (OFF)
 - Holding Register 20 (40021) - solar panel power meter (Float)
+
+## Serial Port
+`sudo socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11`

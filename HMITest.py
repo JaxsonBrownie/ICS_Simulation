@@ -33,7 +33,7 @@ def plc1_client(client : ModbusClient):
 
     # polling loop
     while True:
-        reg_list = client.read_holding_registers(10, 20)
+        reg_list = client.read_input_registers(20, 1)
         coil_list = client.read_coils(10, 1)
 
         # store recorded values
@@ -46,7 +46,7 @@ def plc1_client(client : ModbusClient):
                 plc1_coils = list(coil_list)
 
         # delay between polls
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 ################################################################################
 
@@ -67,6 +67,6 @@ if __name__ == '__main__':
         """
     
     while True:
-        _logger.info(f"HR: {plc1_holding_regs}")
+        _logger.info(f"IR: {plc1_holding_regs}")
 
-        time.sleep(1)
+        time.sleep(0.2)

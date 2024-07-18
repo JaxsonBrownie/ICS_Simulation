@@ -1,6 +1,6 @@
 from pymodbus.client import ModbusSerialClient
 
-client = ModbusSerialClient(method='rtu', port='/dev/pts/9', baudrate=9600, timeout=1)
+client = ModbusSerialClient(method='rtu', port='/dev/ttyS11', baudrate=9600, timeout=1)
 client.connect()
 
 # Read holding register at address 0

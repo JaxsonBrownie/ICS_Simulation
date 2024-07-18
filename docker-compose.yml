@@ -1,62 +1,66 @@
 services:
   # Sensors + Actuators
-  transferswitch1:
-    build: containers/transferswitch1
-    container_name: TransferSwitch1
-    command: ["python3", "TransferSwitch.py"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.32
-
   powermeter1:
     build: containers/powermeter1
     container_name: PowerMeter1
-    command: ["python3", "PowerMeter.py"]
+    devices:
+      - "/dev/ttyS10:/dev/ttyS10"
+    command: ["python3", "PowerMeter.py", "/dev/ttyS10"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.31
 
-  transferswitch2:
-    build: containers/transferswitch2
-    container_name: TransferSwitch2
-    command: ["python3", "TransferSwitch.py"]
+  transferswitch1:
+    build: containers/transferswitch1
+    container_name: TransferSwitch1
+      - "/dev/ttyS12:/dev/ttyS12"
+    command: ["python3", "TransferSwitch.py", "/dev/ttyS12"]
     networks:
       vlan1:
-        ipv4_address: 192.168.0.34
+        ipv4_address: 192.168.0.32 # can probs remove
 
-  powermeter2:
-    build: containers/powermeter2
-    container_name: PowerMeter2
-    command: ["python3", "PowerMeter.py"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.33
+
+  #transferswitch2:
+  #  build: containers/transferswitch2
+  #  container_name: TransferSwitch2
+  #  command: ["python3", "TransferSwitch.py"]
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.34
+
+  #powermeter2:
+  #  build: containers/powermeter2
+  #  container_name: PowerMeter2
+  #  command: ["python3", "PowerMeter.py"]
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.33
 
   # PLCs
   plc1:
     build: containers/plc1
     container_name: PLC1
-    command: ["python3", "PLC.py", "192.168.0.31", "192.168.0.32"]
+    command: ["python3", "PLC.py", "/dev/ttyS11", "/dev/ttyS13"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
         
-  plc2:
-    build: containers/plc2
-    container_name: PLC2
-    command: ["python3", "PLC.py", "192.168.0.33", "192.168.0.34"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.22
+  #plc2:
+  #  build: containers/plc2
+  #  container_name: PLC2
+  #  command: ["python3", "PLC.py", "192.168.0.33", "192.168.0.34"]
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.22
 
   # HMIs
-  hmi1:
-    build: containers/hmi1
-    container_name: HMI1
-    command: ["python3", "HMI1.py", "192.168.0.21", "192.168.0.22"]
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.11
+  #hmi1:
+  #  build: containers/hmi1
+  #  container_name: HMI1
+  #  command: ["python3", "HMI1.py", "192.168.0.21", "192.168.0.22"]
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.11
 
 
 # Modbus TCP network

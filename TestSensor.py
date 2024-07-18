@@ -41,4 +41,4 @@ temperature_thread.daemon = True
 temperature_thread.start()
 
 # Start the Modbus RTU server
-StartSerialServer(context=context, port='/dev/pts/5', baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+StartSerialServer(context=context, port='/dev/pts/4', baudrate=9600, timeout=1, framer=ModbusRtuFramer)
