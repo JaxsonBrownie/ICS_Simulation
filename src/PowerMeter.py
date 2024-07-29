@@ -45,7 +45,7 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
 
         # write to input register address 20 value of solar panel meter (40021)
         data_bank.setValues(20, [int(pm_data[incr])])
-        _logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
+        #_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
         time.sleep(0.2)
 
 ################################################################################

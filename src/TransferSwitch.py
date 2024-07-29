@@ -44,7 +44,7 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
                 switch_value = TRANSFER_SWITCH.SOLAR
             else:
                 switch_value = TRANSFER_SWITCH.MAINS
-        _logger.info(f"TRANSFER SWITCH: {switch_value}")
+        #_logger.info(f"TRANSFER SWITCH: {switch_value}")
 
         time.sleep(2)
 
