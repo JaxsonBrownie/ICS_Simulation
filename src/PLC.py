@@ -3,6 +3,7 @@
 import logging
 import sys
 import time
+from dataset import AusgridDataset
 from enum import Enum
 from threading import Thread, Lock
 from pyModbusTCP.server import ModbusServer, DataBank
@@ -28,6 +29,22 @@ _logger.addHandler(console_handler)
 
 ################################################################################
 
+"""Reads in solar panel readings from the provided dataset"""
+def _get_ats_threshold(filename):
+    # create dataset object for the Ausgrid dataset
+    dataset = AusgridDataset()
+
+    # read in the dataset csv file
+    dataset.readFile(filename)
+
+    # extract the required values from the dataset
+    values = dataset.extract()
+    switching_threshold = (values[2]/24)*0.3
+
+    return switching_threshold
+
+################################################################################
+
 """Thread for the PLC server"""
 def plc_server(server : ModbusServer):
     server.start()
@@ -49,7 +66,7 @@ def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank):
 ################################################################################
 
 """Thread for the PLC client to the transfer switch"""
-def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank):
+def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank, switching_threshold):
     switch_value = TRANSFER_SWITCH.MAINS
 
     while True:
@@ -58,7 +75,7 @@ def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank
 
         # set the coil on the transfer switch depending on power output
         if pm_value:
-            if pm_value[0] < 100:
+            if pm_value[0] < switching_threshold:
                 switch_value = TRANSFER_SWITCH.MAINS
             else:
                 switch_value = TRANSFER_SWITCH.SOLAR
@@ -126,19 +143,11 @@ if __name__ == '__main__':
 
     # start the transfer switch client thread
     _logger.info(f"Starting PLC Transfer Switch Client")
-    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank))
+    switching_threshold = _get_ats_threshold("solar-home-data.csv")
+    _logger.info(f"ATS threshold value: {switching_threshold}")
+    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, switching_threshold))
     tp_client.daemon = True
     tp_client.start()
-
-    # init transfer switch modbus client
-    #client2 = ModbusClient(host=client2_ip, port=client_port, unit_id=1)
-
-    # start the transfer switch client thread
-    #_logger.info(f"Starting PLC Transfer Switch Client")
-    #tp_client = Thread(target=plc_client_transfer_switch, args=(client2, data_bank))
-    #tp_client.daemon = True
-    #tp_client.start()
-
 
     while True:        
         time.sleep(1)

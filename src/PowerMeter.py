@@ -4,6 +4,7 @@ import sys
 import time
 import logging
 import numpy as np
+from dataset import AusgridDataset
 from scipy.stats import norm
 from threading import Thread
 from pymodbus.server import StartSerialServer
@@ -35,6 +36,23 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 
 ################################################################################
 
+"""Reads in solar panel readings from the provided dataset"""
+def _read_solar_panel_dataset(filename):
+    # create dataset object for the Ausgrid dataset
+    dataset = AusgridDataset()
+
+    # read in the dataset csv file
+    dataset.readFile(filename)
+
+    # extract the required values from the dataset
+    values = dataset.extract()
+    pm_values = values[3]
+
+    return pm_values
+
+
+################################################################################
+
 """Thread to simulate power meter sensor data writing"""
 def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
     incr = -1
@@ -57,9 +75,23 @@ if __name__ == '__main__':
         exit(1)
 
     client_com = sys.argv[1]
-    
+
+    # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
+    title = """
+        ------------------------------------------------------
+         _____                       __  __      _
+        |  __ \                     |  \/  |    | |
+        | |__) |____      _____ _ __| \  / | ___| |_ ___ _ __
+        |  ___/ _ \ \ /\ / / _ \ '__| |\/| |/ _ \ __/ _ \ '__|
+        | |  | (_) \ V  V /  __/ |  | |  | |  __/ ||  __/ |
+        |_|   \___/ \_/\_/ \___|_|  |_|  |_|\___|\__\___|_|
+        ------------------------------------------------------
+        """
+    print(title)
+
     # generate dataset to simulate power meter recordings
-    pm_data = _generate_norm_power()
+    #pm_data = _generate_norm_power()
+    pm_data = _read_solar_panel_dataset("solar-home-data.csv")  # note: this csv file gets copied into the directory when the containers are made
 
     # create input register default data block
     data_block = ModbusSequentialDataBlock.create()

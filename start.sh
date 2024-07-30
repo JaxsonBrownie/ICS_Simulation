@@ -40,6 +40,9 @@ create_container() {
 
     cp src/$2 containers/$lowercase/src
     cp docker-files/Dockerfile containers/$lowercase
+
+    cp src/dataset.py containers/$lowercase/src
+    cp datasets/solar-home-data.csv containers/$lowercase/src
 }
 
 # Function to cleanup serial ports
