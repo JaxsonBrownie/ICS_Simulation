@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     #----------------------------------------------------------------------
     # init power meter modbus client
-    pm_client = ModbusSerialClient(method='rtu', port=client1_com, baudrate=9600, timeout=1)
+    pm_client = ModbusSerialClient(port=client1_com, baudrate=9600, timeout=1)
     pm_client.connect()
 
     # start the power meter client thread
@@ -138,12 +138,13 @@ if __name__ == '__main__':
 
     #----------------------------------------------------------------------
     # init transfer switch modbus client
-    ts_client = ModbusSerialClient(method='rtu', port=client2_com, baudrate=9600, timeout=1)
+    ts_client = ModbusSerialClient(port=client2_com, baudrate=9600, timeout=1)
     ts_client.connect()
 
     # start the transfer switch client thread
     _logger.info(f"Starting PLC Transfer Switch Client")
     switching_threshold = _get_ats_threshold("solar-home-data.csv")
+    
     _logger.info(f"ATS threshold value: {switching_threshold}")
     tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, switching_threshold))
     tp_client.daemon = True

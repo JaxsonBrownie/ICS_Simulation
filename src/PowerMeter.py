@@ -36,7 +36,7 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 
 ################################################################################
 
-"""Reads in solar panel readings from the provided dataset"""
+"""Reads in the set of solar panel reading sets from the provided dataset"""
 def _read_solar_panel_dataset(filename):
     # create dataset object for the Ausgrid dataset
     dataset = AusgridDataset()
@@ -55,16 +55,20 @@ def _read_solar_panel_dataset(filename):
 
 """Thread to simulate power meter sensor data writing"""
 def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
-    incr = -1
+    i = -1
+
+    # loop through each solar panel reading for the month
     while True:
         # control the increment
-        incr += 1
-        if incr >= len(pm_data): incr = 0
+        if i >= len(pm_data): i = 0
+        i += 1
 
-        # write to input register address 20 value of solar panel meter (40021)
-        data_bank.setValues(20, [int(pm_data[incr])])
-        #_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
-        time.sleep(0.2)
+        for j in range(len(pm_data[i])):
+            # write to input register address 20 value of solar panel meter (40021)
+            data_bank.setValues(20, [pm_data[i][j]])
+
+            #_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
+            time.sleep(0.2)
 
 ################################################################################
 

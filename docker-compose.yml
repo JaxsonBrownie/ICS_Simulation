@@ -1,5 +1,5 @@
 services:
-  # Sensors + Actuators 
+  # Sensors + Actuators
   powermeter1:
     build: containers/powermeter1
     container_name: PowerMeter1

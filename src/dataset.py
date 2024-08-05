@@ -2,6 +2,7 @@
 
 import csv
 import random
+import time
 import numpy as np
 
 ###########################################################
@@ -15,7 +16,7 @@ class AusgridDataset:
 
 	###########################################################
 	# Method: readFile
-	# Purpose: reads in the dataset file
+	# Purpose: reads in the dataset file into the "content" field
 	###########################################################
 	def readFile(self, filename):
 		file_rows = []
@@ -31,7 +32,6 @@ class AusgridDataset:
 				file_rows.append(row)
 
 		# filter data
-		#filtered_rows = []
 		for row in file_rows:
 			include_row = True
 			cleaned_row = [field.strip() for field in row]
@@ -52,13 +52,23 @@ class AusgridDataset:
 	# Method: extract
 	# Purpose: extracts and returns values required for the simulation.
 	# 	Extract values for two random houses. The extracted data is as follows:
-	# 	Customr Number, Solar Panel Rating (kWp), Average Energy Consumption per day (Wh), Array of the average solar panel readings (Wh)
+	# 		[
+	# 		customr number, 
+	# 		solar panel rating (kWp), 
+	# 		average energy consumption per day (Wh), 
+	# 			[
+	# 			day 1 solar panel generation,
+	#			day 2 solar panel generation
+	#			...
+	# 			],
+	#		]
 	###########################################################
 	def extract(self):
-		extracted_values = []
+		#extracted_values = []
 
 		# pick a random customer
 		customer_id = int(random.choice(self.content)[0])
+		customer_id = 1
 
 		# extract values for that specific customer into a sub-list
 		customer_vals = [i for i in self.content if int(i[0]) == customer_id]
@@ -67,29 +77,31 @@ class AusgridDataset:
 		# calculate average energy consumption for all days for selected customer
 		total_days = 0
 		total_energy = 0
+		solar_panel_readings = []
 
 		for day in customer_vals:
-			# check if the row is about energy consumption
+			# check if the row is about energy consumption (code for this is "GC")
 			if day[3] == "GC":
-				# get total energy for that day
+				# get total energy for that day (columns 5 to end)
 				day_energy = sum(float(val) for val in day[5:-1])
 				total_energy += day_energy
 				total_days += 1
 
-		###########################################################
-		# extract a list of all solar panel readings across every day for the selected customer
-		solar_panel_readings = []
-		for day in customer_vals:
+			# extract a list of all solar panel readings across every day for the selected customer
 			if day[3] == "GG":
-				day_readings = list(float(val) for val in day[5:-1])
+				day_readings = list(int(float(val)*1000) for val in day[5:-1])
 				solar_panel_readings.append(day_readings)
 
+		###########################################################
+
 		# calulate average solar panel readings across all recorded days (rounded to 3 dp and in W)
-		average_solar_panel_readings = np.mean(solar_panel_readings, axis=0)
-		average_solar_panel_readings = [int(val*1000) for val in average_solar_panel_readings]
+		#average_solar_panel_readings = np.mean(solar_panel_readings, axis=0)
+		#average_solar_panel_readings = [int(val*1000) for val in average_solar_panel_readings]
 		#average_solar_panel_readings = [round(float(val), 3) for val in average_solar_panel_readings]
 		
-		extracted_values = [customer_id, customer_vals[0][1], (total_energy/total_days)*1000, average_solar_panel_readings]
+		#extracted_values = [customer_id, customer_vals[0][1], (total_energy/total_days)*1000, [average_solar_panel_readings]]
+		extracted_values = [customer_id, customer_vals[0][1], (total_energy/total_days)*1000, solar_panel_readings]
+
 		return extracted_values
 
 if __name__ == '__main__':
@@ -102,5 +114,18 @@ if __name__ == '__main__':
 	# extract the required values from the dataset
 	values = dataset.extract()
 
-	for val in values:
-		print(val)
+	pm_data = values[3]
+	i = -1
+	# loop through each solar panel reading for the month
+	while True:
+		# control the increment
+		if i >= len(pm_data): i = 0
+		i += 1
+
+		for j in range(len(pm_data[i])):
+			# write to input register address 20 value of solar panel meter (40021)
+			#data_bank.setValues(20, [pm_data[i][j]])
+			print(pm_data[i][j])
+
+			#_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
+			time.sleep(0.3125) # this time will cycle through each day every 30 seconds (there are 48 points of data every day)
