@@ -68,7 +68,6 @@ class AusgridDataset:
 
 		# pick a random customer
 		customer_id = int(random.choice(self.content)[0])
-		customer_id = 1
 
 		# extract values for that specific customer into a sub-list
 		customer_vals = [i for i in self.content if int(i[0]) == customer_id]

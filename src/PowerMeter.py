@@ -67,8 +67,8 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
             # write to input register address 20 value of solar panel meter (40021)
             data_bank.setValues(20, [pm_data[i][j]])
 
-            #_logger.info(f"SOLAR PANAL THREAD: Inc: {incr}, Value: {int(pm_data[incr])}")
-            time.sleep(0.2)
+            #_logger.info(f"SOLAR PANAL THREAD: Day: {i}, Inc: {j}, Value: {pm_data[i][j]}")
+            time.sleep(0.3125)
 
 ################################################################################
 
@@ -94,7 +94,6 @@ if __name__ == '__main__':
     print(title)
 
     # generate dataset to simulate power meter recordings
-    #pm_data = _generate_norm_power()
     pm_data = _read_solar_panel_dataset("solar-home-data.csv")  # note: this csv file gets copied into the directory when the containers are made
 
     # create input register default data block
