@@ -37,9 +37,9 @@ def _get_ats_threshold(filename):
     # read in the dataset csv file
     dataset.readFile(filename)
 
-    # extract the required values from the dataset
+    # extract the required values from the dataset: 20% of the average energy consumption price
     values = dataset.extract()
-    switching_threshold = (values[2]/24)*0.3
+    switching_threshold = (values[2]/24)*0.2
 
     return switching_threshold
 

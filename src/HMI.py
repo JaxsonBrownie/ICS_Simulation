@@ -80,8 +80,19 @@ def plc2_client(client : ModbusClient):
 @app.route('/')
 def index():
     global plc1_holding_regs, plc1_coils, plc2_holding_regs, plc2_coils
-    return jsonify({"plc1":{"hr":plc1_holding_regs, "co":plc1_coils},
-                    "plc2":{"hr":plc2_holding_regs, "co":plc2_coils}})
+    return jsonify(
+        {
+            "plc1" : 
+            {
+                "hr" : plc1_holding_regs, 
+                "co" : plc1_coils
+            },
+            "plc2" :
+            {
+                "hr" : plc2_holding_regs, 
+                "co" : plc2_coils
+            }
+        })
 
 ################################################################################
 
@@ -123,8 +134,11 @@ if __name__ == '__main__':
         |_|  |_|_|  |_|_____|
         ---------------------
         """
-    
-    # start flask web server
+    print(title)
+
+    # start flask web server (without terminal logs)
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR) 
     app.run(host="0.0.0.0", port=8000)
 
     #while True:
