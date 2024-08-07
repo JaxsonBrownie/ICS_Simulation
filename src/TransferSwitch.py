@@ -46,7 +46,7 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
                 switch_value = TRANSFER_SWITCH.MAINS
         _logger.info(f"TRANSFER SWITCH: {switch_value}")
 
-        time.sleep(2)
+        time.sleep(0.5)
 
 ################################################################################
 
@@ -58,6 +58,19 @@ if __name__ == '__main__':
 
     client_com = sys.argv[1]
     
+    # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
+    title = """
+        ----------------------------------------------------------------------
+          _______                   __          _____         _ _       _     
+         |__   __|                 / _|        / ____|       (_) |     | |    
+            | |_ __ __ _ _ __  ___| |_ ___ _ _| (_____      ___| |_ ___| |__  
+            | | '__/ _` | '_ \/ __|  _/ _ \ '__\___ \ \ /\ / / | __/ __| '_ \ 
+            | | | | (_| | | | \__ \ ||  __/ |  ____) \ V  V /| | || (__| | | |
+            |_|_|  \__,_|_| |_|___/_| \___|_| |_____/ \_/\_/ |_|\__\___|_| |_|
+        ----------------------------------------------------------------------
+        """
+    print(title)
+
     # create coil default data block
     data_block = ModbusSequentialDataBlock.create()
 

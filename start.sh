@@ -40,21 +40,21 @@ create_container() {
 
     cp src/$2 containers/$lowercase/src
     cp docker-files/Dockerfile containers/$lowercase
+
+    cp src/dataset.py containers/$lowercase/src
+    cp datasets/solar-home-data.csv containers/$lowercase/src
 }
 
 # Function to cleanup serial ports
 cleanup() {
     echo "Cleaning up serial ports"
-    kill $serial1 $serial2 $serial3 $serial4
+    #kill $serial1 $serial2 $serial3 $serial4
     rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 /dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
 }
 trap cleanup EXIT
 
-# HMI1
-#create_container HMI1 HMI1.py
-
-# HMI2
-#create_container HMI2 HMI2.py
+# HMI
+create_container HMI HMI.py
 
 # PLC1
 create_container PLC1 PLC.py

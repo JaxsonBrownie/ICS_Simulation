@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
 import time
 import logging
 import sys
 import os
+from flask import Flask, jsonify
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 
@@ -24,6 +24,9 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
+
+# create flask app
+app = Flask(__name__)
 
 ################################################################################
 
@@ -46,11 +49,11 @@ def plc1_client(client : ModbusClient):
                 plc1_coils = list(coil_list)
 
         # delay between polls
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 ################################################################################
 
-"""PLC1 HMI client thread"""
+"""PLC2 HMI client thread"""
 def plc2_client(client : ModbusClient):
     global plc2_holding_regs, plc2_coils, plc2_lock
 
@@ -69,7 +72,27 @@ def plc2_client(client : ModbusClient):
                 plc2_coils = list(coil_list)
 
         # delay between polls
-        time.sleep(0.5)
+        time.sleep(0.2)
+
+################################################################################
+
+"""Flask web server"""
+@app.route('/')
+def index():
+    global plc1_holding_regs, plc1_coils, plc2_holding_regs, plc2_coils
+    return jsonify(
+        {
+            "plc1" : 
+            {
+                "hr" : plc1_holding_regs, 
+                "co" : plc1_coils
+            },
+            "plc2" :
+            {
+                "hr" : plc2_holding_regs, 
+                "co" : plc2_coils
+            }
+        })
 
 ################################################################################
 
@@ -102,20 +125,26 @@ if __name__ == '__main__':
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
-        ---------------------------
-         _    _ __  __ _____ __ 
-        | |  | |  \/  |_   _/_ |
-        | |__| | \  / | | |  | |
-        |  __  | |\/| | | |  | |
-        | |  | | |  | |_| |_ | |
-        |_|  |_|_|  |_|_____||_|
-        ---------------------------
+        ---------------------
+         _    _ __  __ _____ 
+        | |  | |  \/  |_   _|
+        | |__| | \  / | | |  
+        |  __  | |\/| | | |  
+        | |  | | |  | |_| |_ 
+        |_|  |_|_|  |_|_____|
+        ---------------------
         """
-    
-    while True:
-        _logger.info(f"PLC1 Solar Panel Power Meter (mW): {plc1_holding_regs[0]}")
-        _logger.info(f"PLC1 Transfer Switch (Mains/Solar): {plc1_coils[0]}")
-        _logger.info(f"PLC2 Solar Panel Power Meter (mW): {plc2_holding_regs[0]}")
-        _logger.info(f"PLC2 Transfer Switch (Mains/Solar): {plc2_coils[0]}")
+    print(title)
 
-        time.sleep(1)
+    # start flask web server (without terminal logs)
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR) 
+    app.run(host="0.0.0.0", port=8000)
+
+    #while True:
+    #    _logger.info(f"PLC1 Solar Panel Power Meter (mW): {plc1_holding_regs[0]}")
+    #    _logger.info(f"PLC1 Transfer Switch (Mains/Solar): {plc1_coils[0]}")
+    #    _logger.info(f"PLC2 Solar Panel Power Meter (mW): {plc2_holding_regs[0]}")
+    #    _logger.info(f"PLC2 Transfer Switch (Mains/Solar): {plc2_coils[0]}")
+
+    #    time.sleep(0.2)

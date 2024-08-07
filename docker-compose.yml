@@ -59,13 +59,15 @@ services:
         ipv4_address: 192.168.0.22
 
   # HMIs
-  #hmi1:
-  #  build: containers/hmi1
-  #  container_name: HMI1
-  #  command: ["python3", "HMI1.py", "192.168.0.21", "192.168.0.22"]
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.11
+  hmi:
+    build: containers/hmi
+    container_name: HMI
+    command: ["python3", "HMI.py", "192.168.0.21", "192.168.0.22"]
+    ports:
+      - "8000:8000"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.11
 
 
 # Modbus TCP network
