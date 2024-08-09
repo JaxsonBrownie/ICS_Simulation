@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+
 import time
 import logging
 import sys
-import os
+import constants
 from flask import Flask, jsonify
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
@@ -28,9 +29,11 @@ _logger.addHandler(console_handler)
 # create flask app
 app = Flask(__name__)
 
-################################################################################
-
-"""PLC1 HMI client thread"""
+###########################################################
+# Function: plc1_client
+# Purpose: Handles the Modbus TCP client for reading from
+#    PLC 1
+###########################################################
 def plc1_client(client : ModbusClient):
     global plc1_holding_regs, plc1_coils, plc1_lock
 
@@ -49,11 +52,13 @@ def plc1_client(client : ModbusClient):
                 plc1_coils = list(coil_list)
 
         # delay between polls
-        time.sleep(0.2)
+        time.sleep(constants.HMI_POLL_SPEED)
 
-################################################################################
-
-"""PLC2 HMI client thread"""
+###########################################################
+# Function: plc2_client
+# Purpose: Handles the Modbus TCP client for reading from
+#    PLC 2
+###########################################################
 def plc2_client(client : ModbusClient):
     global plc2_holding_regs, plc2_coils, plc2_lock
 
@@ -72,11 +77,12 @@ def plc2_client(client : ModbusClient):
                 plc2_coils = list(coil_list)
 
         # delay between polls
-        time.sleep(0.2)
+        time.sleep(constants.HMI_POLL_SPEED)
 
-################################################################################
-
-"""Flask web server"""
+###########################################################
+# Wrapped Function: index
+# Purpose: Simple endpoint for the Flask server
+###########################################################
 @app.route('/')
 def index():
     global plc1_holding_regs, plc1_coils, plc2_holding_regs, plc2_coils
@@ -85,17 +91,24 @@ def index():
             "plc1" : 
             {
                 "hr" : plc1_holding_regs, 
-                "co" : plc1_coils
+                "coil" : plc1_coils
             },
             "plc2" :
             {
                 "hr" : plc2_holding_regs, 
-                "co" : plc2_coils
+                "coil" : plc2_coils
             }
         })
 
-################################################################################
 
+###########################################################
+# Special Function: __main__
+# Purpose: Sets up the two Modbus TCP clients for the 2 PLCs.
+#   Each client runs as their own thread. Finally, sets up
+#   the Flask server endpoints. Takes in 2 args:
+#   argv[1] = PLC1 IP
+#   argv[2] = PLC2 IP
+###########################################################
 if __name__ == '__main__':
     # verify args
     if len(sys.argv) < 3:
@@ -140,11 +153,3 @@ if __name__ == '__main__':
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR) 
     app.run(host="0.0.0.0", port=8000)
-
-    #while True:
-    #    _logger.info(f"PLC1 Solar Panel Power Meter (mW): {plc1_holding_regs[0]}")
-    #    _logger.info(f"PLC1 Transfer Switch (Mains/Solar): {plc1_coils[0]}")
-    #    _logger.info(f"PLC2 Solar Panel Power Meter (mW): {plc2_holding_regs[0]}")
-    #    _logger.info(f"PLC2 Transfer Switch (Mains/Solar): {plc2_coils[0]}")
-
-    #    time.sleep(0.2)

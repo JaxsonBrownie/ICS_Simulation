@@ -38,10 +38,13 @@ create_container() {
     mkdir containers/$lowercase
     mkdir containers/$lowercase/src
 
+    # Copy container-specific files
     cp src/$2 containers/$lowercase/src
     cp docker-files/Dockerfile containers/$lowercase
 
+    # Copy global files to each container
     cp src/dataset.py containers/$lowercase/src
+    cp src/constants.py containers/$lowercase/src
     cp datasets/solar-home-data.csv containers/$lowercase/src
 }
 

@@ -3,6 +3,7 @@
 import sys
 import time
 import logging
+import constants
 import numpy as np
 from dataset import AusgridDataset
 from scipy.stats import norm
@@ -20,9 +21,12 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
 
-################################################################################
-
-"""Generates a set of power (mW) values to represent a solar panels efficency over 24 hours"""
+###########################################################
+# Private Function: generate_norm_power
+# Purpose: Generates a simulated set of data points that
+#   represent solar panel generation over a day. Uses a
+#   normal distribution (bell-curve) to represent this data
+###########################################################
 def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, hours=24):
     # Note: power_const of 10.5 generates generic normal for a typical 2W rated solar panel
 
@@ -34,9 +38,13 @@ def _generate_norm_power(mean=12, std_dev=2, power_const=10.5, efficency=0.7, ho
 
     return y
 
-################################################################################
-
-"""Reads in the set of solar panel reading sets from the provided dataset"""
+###########################################################
+# Private Function: read_solar_panel_dataset
+# Purpose: Creates an AusgridDataset object to read in and
+#   extract data points for solar panel readings. This
+#   dataset is taken from real-world readings of households
+#   in NSW.
+###########################################################
 def _read_solar_panel_dataset(filename):
     # create dataset object for the Ausgrid dataset
     dataset = AusgridDataset()
@@ -51,9 +59,12 @@ def _read_solar_panel_dataset(filename):
     return pm_values
 
 
-################################################################################
-
-"""Thread to simulate power meter sensor data writing"""
+###########################################################
+# Function: power_meter
+# Purpose: Simulates a Hardware-in-the-Loop process of a
+#   power meter reading power input from a solar panel.
+#   Writes recorded values to input register 20 (40021)
+###########################################################
 def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
     i = -1
 
@@ -67,11 +78,15 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
             # write to input register address 20 value of solar panel meter (40021)
             data_bank.setValues(20, [pm_data[i][j]])
 
-            #_logger.info(f"SOLAR PANAL THREAD: Day: {i}, Inc: {j}, Value: {pm_data[i][j]}")
-            time.sleep(0.3125)
+            _logger.debug(f"SOLAR PANAL THREAD: Day: {i}, Inc: {j}, Value: {pm_data[i][j]}")
+            time.sleep(constants.PM_LOOP_SPEED)
 
-################################################################################
-
+###########################################################
+# Special Function: __main__
+# Purpose: Sets up the Modbus RTU server for holding values
+#   from the simulated HIL. Takes in one arg:
+#   argv[1] = power meter comm port
+###########################################################
 if __name__ == '__main__':
     # verify args
     if len(sys.argv) < 2:

@@ -3,15 +3,12 @@
 import time
 import logging
 import sys
+import constants
 from enum import Enum
-from threading import Thread, Lock
+from threading import Thread
 from pymodbus.server import StartSerialServer
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer
-
-# set global variables
-#lock = Lock()
 
 # enum to represent the switch state
 class TRANSFER_SWITCH(Enum):
@@ -27,9 +24,12 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
 
-################################################################################
-
-"""Thread to simulate the transfer switch actuator"""
+###########################################################
+# Function: transfer_switch
+# Purpose: Simulated a Hardware-in-the-Loop transfer switch.
+#   Reads coil value at 10 (00011) and switches to solar power
+#   if true (value 1) or to mains power if false (value 0)
+###########################################################
 def transfer_switch(data_bank : ModbusSequentialDataBlock):
     # default switch value
     switch_value = TRANSFER_SWITCH.MAINS
@@ -44,12 +44,16 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
                 switch_value = TRANSFER_SWITCH.SOLAR
             else:
                 switch_value = TRANSFER_SWITCH.MAINS
-        #_logger.info(f"TRANSFER SWITCH: {switch_value}")
+        _logger.debug(f"TRANSFER SWITCH: {switch_value}")
 
-        time.sleep(0.5)
+        time.sleep(constants.TS_POLL_SPEED)
 
-################################################################################
-
+###########################################################
+# Special Function: __main__
+# Purpose: Sets up the Modbus RTU server for the simulated
+#   HIL of the transfer switch. Takes 1 arg:
+#   argv[1] = transfer switch comm port
+###########################################################
 if __name__ == '__main__':
     # verify args
     if len(sys.argv) < 2:
