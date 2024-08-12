@@ -87,6 +87,6 @@ if __name__ == '__main__':
     tp_server.daemon = True
     tp_server.start()
 
-    # start the Modbus RTU server
+    # start the Modbus RTU serve
     _logger.info("Starting Transfer Switch")
     StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
