@@ -4,6 +4,7 @@ import time
 import logging
 import sys
 import constants
+import argparse
 from flask import Flask, jsonify
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
@@ -105,18 +106,22 @@ def index():
 # Special Function: __main__
 # Purpose: Sets up the two Modbus TCP clients for the 2 PLCs.
 #   Each client runs as their own thread. Finally, sets up
-#   the Flask server endpoints. Takes in 2 args:
-#   argv[1] = PLC1 IP
-#   argv[2] = PLC2 IP
+#   the Flask server endpoints.
 ###########################################################
 if __name__ == '__main__':
-    # verify args
-    if len(sys.argv) < 3:
-        print("Incorrect number of arguments")
-        exit(1)
+    # pass args
+    parser = argparse.ArgumentParser(description="Human Machine Interface")
     
-    client1_ip = sys.argv[1]
-    client2_ip = sys.argv[2]
+    # Add arguments
+    parser.add_argument('-1', '--plc1', type=str, help='IP of PLC 1')
+    parser.add_argument('-2', '--plc2', type=str, help='IP of PLC 2')
+    parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
+
+    # Parse the arguments
+    args = parser.parse_args()
+    client1_ip = args.plc1
+    client2_ip = args.plc2
+    webport = args.webport
 
     # init modbus PLC1 client
     client1 = ModbusClient(host=client1_ip, port=5020, unit_id=1)
@@ -152,4 +157,4 @@ if __name__ == '__main__':
     # start flask web server (without terminal logs)
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR) 
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=webport)

@@ -4,6 +4,7 @@ import logging
 import sys
 import time
 import constants
+import argparse
 from dataset import AusgridDataset
 from enum import Enum
 from threading import Thread, Lock
@@ -106,21 +107,23 @@ def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank
 ###########################################################
 # Special Function: __main__
 # Purpose: Sets up the two Modbus RTU clients and the Modbus
-#   TCP server. Takes in two args:
-#   argv[1] = power meter comm port
-#   argv[2] = transfer switch comm port
+#   TCP server.
 ###########################################################
 if __name__ == '__main__':
-    # verify args
-    if len(sys.argv) < 3:
-        print("Incorrect number of arguments")
-        exit(1)
+    # pass args
+    parser = argparse.ArgumentParser(description="Programmable Logic Controller")
+    
+    # Add arguments
+    parser.add_argument('-1', '--pmcomm', type=str, help='Comm port for the power meter')
+    parser.add_argument('-2', '--tscomm', type=str, help='Comm port for the transfer switch')
+
+    # Parse the arguments
+    args = parser.parse_args()
+    client1_com = args.pmcomm
+    client2_com = args.tscomm
     
     server_ip = "0.0.0.0"
     server_port = 5020
-
-    client1_com = sys.argv[1]
-    client2_com = sys.argv[2]
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """

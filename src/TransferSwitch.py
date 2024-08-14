@@ -4,6 +4,7 @@ import time
 import logging
 import sys
 import constants
+import argparse
 from enum import Enum
 from threading import Thread
 from pymodbus.server import StartSerialServer
@@ -55,12 +56,15 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
 #   argv[1] = transfer switch comm port
 ###########################################################
 if __name__ == '__main__':
-    # verify args
-    if len(sys.argv) < 2:
-        print("Incorrect number of arguments")
-        exit(1)
+    # pass args
+    parser = argparse.ArgumentParser(description="Human Machine Interface")
+    
+    # Add arguments
+    parser.add_argument('-c', '--comm', type=str, help='Comm port for the transfer switch')
 
-    client_com = sys.argv[1]
+    # Parse the arguments
+    args = parser.parse_args()
+    client_com = args.comm
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -87,6 +91,6 @@ if __name__ == '__main__':
     tp_server.daemon = True
     tp_server.start()
 
-    # start the Modbus RTU serve
+    # start the Modbus RTU server
     _logger.info("Starting Transfer Switch")
     StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)

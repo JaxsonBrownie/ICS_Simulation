@@ -6,7 +6,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS10:/dev/ttyS10"
-    command: ["python3", "PowerMeter.py", "/dev/ttyS10"]
+    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS10"]
 
   transferswitch1:
     build: containers/transferswitch1
@@ -14,7 +14,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS12:/dev/ttyS12"
-    command: ["python3", "TransferSwitch.py", "/dev/ttyS12"]
+    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS12"]
 
   powermeter2:
     build: containers/powermeter2
@@ -22,7 +22,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS14:/dev/ttyS14"
-    command: ["python3", "PowerMeter.py", "/dev/ttyS14"]
+    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS14"]
 
   transferswitch2:
     build: containers/transferswitch2
@@ -30,7 +30,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS16:/dev/ttyS16"
-    command: ["python3", "TransferSwitch.py", "/dev/ttyS16"]
+    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS16"]
 
 
   # PLCs
@@ -41,7 +41,7 @@ services:
     volumes:
       - "/dev/ttyS11:/dev/ttyS11"
       - "/dev/ttyS13:/dev/ttyS13"
-    command: ["python3", "PLC.py", "/dev/ttyS11", "/dev/ttyS13"]
+    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS11", "--tscomm",  "/dev/ttyS13"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
@@ -53,7 +53,7 @@ services:
     volumes:
       - "/dev/ttyS15:/dev/ttyS15"
       - "/dev/ttyS17:/dev/ttyS17"
-    command: ["python3", "PLC.py", "/dev/ttyS15", "/dev/ttyS17"]
+    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS15", "--tscomm", "/dev/ttyS17"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.22
@@ -62,9 +62,9 @@ services:
   hmi:
     build: containers/hmi
     container_name: HMI
-    command: ["python3", "HMI.py", "192.168.0.21", "192.168.0.22"]
+    command: ["python3", "HMI.py", "--plc1", "192.168.0.21", "--plc2", "192.168.0.22", "--webport", "1001"]
     ports:
-      - "8000:8000"
+      - "1001:1001"
     networks:
       vlan1:
         ipv4_address: 192.168.0.11
