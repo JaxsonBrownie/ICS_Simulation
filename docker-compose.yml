@@ -6,7 +6,9 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS10:/dev/ttyS10"
-    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS10"]
+    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS10", "--webport", "3001"]
+    ports:
+      - "3001:3001"
 
   transferswitch1:
     build: containers/transferswitch1
@@ -14,7 +16,9 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS12:/dev/ttyS12"
-    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS12"]
+    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS12", "--webport", "3002"]
+    ports:
+      - "3002:3002"
 
   powermeter2:
     build: containers/powermeter2
@@ -22,7 +26,9 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS14:/dev/ttyS14"
-    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS14"]
+    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS14", "--webport", "3003"]
+    ports:
+      - "3003:3003"
 
   transferswitch2:
     build: containers/transferswitch2
@@ -30,8 +36,9 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS16:/dev/ttyS16"
-    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS16"]
-
+    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS16", "--webport", "3004"]
+    ports:
+      - "3004:3004"
 
   # PLCs
   plc1:

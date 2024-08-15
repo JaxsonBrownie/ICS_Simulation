@@ -94,8 +94,8 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
             time.sleep(constants.PM_LOOP_SPEED)
 
 ###########################################################
-# Function: plc_server
-# Purpose: Starts the Modbus TCP server in a separate thread
+# Function: pm_server
+# Purpose: Starts the Modbus RTU server in a separate thread
 ###########################################################
 def pm_server(context, client_com):
     StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
@@ -120,14 +120,16 @@ def index():
 ###########################################################
 if __name__ == '__main__':
     # pass args
-    parser = argparse.ArgumentParser(description="Human Machine Interface")
+    parser = argparse.ArgumentParser(description="Power Meter")
     
     # Add arguments
     parser.add_argument('-c', '--comm', type=str, help='Comm port for the power meter')
+    parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
 
     # Parse the arguments
     args = parser.parse_args()
     client_com = args.comm
+    webport = args.webport
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -166,4 +168,4 @@ if __name__ == '__main__':
     # start flask web server (without terminal logs)
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR) 
-    app.run(host="0.0.0.0", port=8001)
+    app.run(host="0.0.0.0", port=webport)

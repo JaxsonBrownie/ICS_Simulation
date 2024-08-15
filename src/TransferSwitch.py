@@ -5,6 +5,7 @@ import logging
 import sys
 import constants
 import argparse
+from flask import Flask, jsonify
 from enum import Enum
 from threading import Thread
 from pymodbus.server import StartSerialServer
@@ -16,6 +17,9 @@ class TRANSFER_SWITCH(Enum):
     SOLAR = True
     MAINS = False
 
+# set global variables
+switch_value = TRANSFER_SWITCH.MAINS
+
 # create logger
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
@@ -25,6 +29,9 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
 
+# create flask app
+app = Flask(__name__)
+
 ###########################################################
 # Function: transfer_switch
 # Purpose: Simulated a Hardware-in-the-Loop transfer switch.
@@ -32,8 +39,7 @@ _logger.addHandler(console_handler)
 #   if true (value 1) or to mains power if false (value 0)
 ###########################################################
 def transfer_switch(data_bank : ModbusSequentialDataBlock):
-    # default switch value
-    switch_value = TRANSFER_SWITCH.MAINS
+    global switch_value
 
     while True:
         # read the switch coil
@@ -50,6 +56,26 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
         time.sleep(constants.TS_POLL_SPEED)
 
 ###########################################################
+# Function: ts_server
+# Purpose: Starts the Modbus RTU server in a separate thread
+###########################################################
+def ts_server(context, client_com):
+    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+
+###########################################################
+# Wrapped Function: index
+# Purpose: Endpoint to return data on the transfer switch.
+#   Includes only the switch state.
+###########################################################
+@app.route('/')
+def index():
+    global switch_value
+    return jsonify(
+        {
+            "ts_state" : switch_value.value
+        })
+
+###########################################################
 # Special Function: __main__
 # Purpose: Sets up the Modbus RTU server for the simulated
 #   HIL of the transfer switch. Takes 1 arg:
@@ -57,14 +83,16 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
 ###########################################################
 if __name__ == '__main__':
     # pass args
-    parser = argparse.ArgumentParser(description="Human Machine Interface")
+    parser = argparse.ArgumentParser(description="Transfer Switch")
     
     # Add arguments
     parser.add_argument('-c', '--comm', type=str, help='Comm port for the transfer switch')
+    parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
 
     # Parse the arguments
     args = parser.parse_args()
     client_com = args.comm
+    webport = args.webport
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
@@ -93,4 +121,11 @@ if __name__ == '__main__':
 
     # start the Modbus RTU server
     _logger.info("Starting Transfer Switch")
-    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+    tp_server = Thread(target=ts_server, args=(context, client_com))
+    tp_server.daemon = True
+    tp_server.start()
+    
+    # start flask web server (without terminal logs)
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR) 
+    app.run(host="0.0.0.0", port=webport)
