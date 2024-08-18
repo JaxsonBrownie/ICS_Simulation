@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2024-08-18T06:42:01.370Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.6.4 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="nk7_JYx_MdMPLj6ghx4G" version="24.6.4" type="device">
+<mxfile host="Electron" modified="2024-08-18T15:01:36.184Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.6.4 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="5hmpkiBNIH_rd2ga_PZd" version="24.6.4" type="device">
   <diagram name="Page-1" id="IDOkKBYrdXS503mTd7CL">
-    <mxGraphModel dx="941" dy="581" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="779" dy="482" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -181,17 +181,17 @@
         <mxCell id="W9hjnJOPGA-9B1VmCxy0-9" value="TS Poll Speed (s): 0.5" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;" parent="1" vertex="1">
           <mxGeometry x="609" y="740" width="110" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="e13sHcWFaavBkFFdVFmg-1" value="PowerMeter1_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.41&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
-          <mxGeometry x="480" y="850" width="80" height="40" as="geometry" />
+        <mxCell id="e13sHcWFaavBkFFdVFmg-1" value="PowerMeter1_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.41:5001&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="850" width="110" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="e13sHcWFaavBkFFdVFmg-2" value="&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;TransferSwitch1_UI&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.42&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
-          <mxGeometry x="480" y="910" width="90" height="40" as="geometry" />
+        <mxCell id="e13sHcWFaavBkFFdVFmg-2" value="&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;TransferSwitch1_UI&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.42:5002&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="910" width="110" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="e13sHcWFaavBkFFdVFmg-3" value="PowerMeter2_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.43&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
-          <mxGeometry x="863" y="850" width="80" height="40" as="geometry" />
+        <mxCell id="e13sHcWFaavBkFFdVFmg-3" value="PowerMeter2_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.43:5003&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="863" y="850" width="117" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="e13sHcWFaavBkFFdVFmg-4" value="TransferSwitch2_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.44&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
-          <mxGeometry x="863" y="910" width="97" height="40" as="geometry" />
+        <mxCell id="e13sHcWFaavBkFFdVFmg-4" value="TransferSwitch2_UI&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;IP: 192.168.0.44:5004&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="863" y="910" width="117" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

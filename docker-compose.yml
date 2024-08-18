@@ -90,19 +90,32 @@ services:
 
   # UIs
   powermeter1_ui:
-    build: 
-      context: containers/powermeter1_ui
-      #args:
-      #  - REACT_APP_ENDPOINT=http://192.168.0.31:3001/
-    #environment:
-    #  REACT_APP_ENDPOINT: "FUCK"
+    build: containers/powermeter1_ui
     container_name: PowerMeter1_UI
-    command: ["serve", "-s", "build", "-l", "5000"]
+    command: ["serve", "-s", "build", "-l", "5001"]
     ports:
-      - "5000:5000"
-    networks:
-      vlan1:
-        ipv4_address: 192.168.0.41
+      - "5001:5001"
+
+  powermeter2_ui:
+    build: containers/powermeter2_ui
+    container_name: PowerMeter2_UI
+    command: ["serve", "-s", "build", "-l", "5003"]
+    ports:
+      - "5003:5003"
+
+  transferswitch1_ui:
+    build: containers/transferswitch1_ui
+    container_name: TransferSwitch1_UI
+    command: ["serve", "-s", "build", "-l", "5002"]
+    ports:
+      - "5002:5002"
+
+  transferswitch2_ui:
+    build: containers/transferswitch2_ui
+    container_name: TransferSwitch2_UI
+    command: ["serve", "-s", "build", "-l", "5004"]
+    ports:
+      - "5004:5004"
 
 
 

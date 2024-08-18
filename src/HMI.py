@@ -5,6 +5,7 @@ import logging
 import sys
 import constants
 import argparse
+from flask_cors import CORS
 from flask import Flask, jsonify
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
@@ -29,6 +30,7 @@ _logger.addHandler(console_handler)
 
 # create flask app
 app = Flask(__name__)
+CORS(app)
 
 ###########################################################
 # Function: plc1_client

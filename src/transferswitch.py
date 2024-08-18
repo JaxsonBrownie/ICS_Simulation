@@ -5,6 +5,7 @@ import logging
 import sys
 import constants
 import argparse
+from flask_cors import CORS
 from flask import Flask, jsonify
 from enum import Enum
 from threading import Thread
@@ -31,6 +32,7 @@ _logger.addHandler(console_handler)
 
 # create flask app
 app = Flask(__name__)
+CORS(app)
 
 ###########################################################
 # Function: transfer_switch
