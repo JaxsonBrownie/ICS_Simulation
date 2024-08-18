@@ -6,9 +6,12 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS10:/dev/ttyS10"
-    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS10", "--webport", "3001"]
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS10", "--webport", "3001"]
     ports:
       - "3001:3001"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.31
 
   transferswitch1:
     build: containers/transferswitch1
@@ -16,9 +19,12 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS12:/dev/ttyS12"
-    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS12", "--webport", "3002"]
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS12", "--webport", "3002"]
     ports:
       - "3002:3002"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.32
 
   powermeter2:
     build: containers/powermeter2
@@ -26,9 +32,12 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS14:/dev/ttyS14"
-    command: ["python3", "PowerMeter.py", "--comm", "/dev/ttyS14", "--webport", "3003"]
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS14", "--webport", "3003"]
     ports:
       - "3003:3003"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.33
 
   transferswitch2:
     build: containers/transferswitch2
@@ -36,9 +45,12 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS16:/dev/ttyS16"
-    command: ["python3", "TransferSwitch.py", "--comm", "/dev/ttyS16", "--webport", "3004"]
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS16", "--webport", "3004"]
     ports:
       - "3004:3004"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.34
 
   # PLCs
   plc1:
@@ -75,6 +87,20 @@ services:
     networks:
       vlan1:
         ipv4_address: 192.168.0.11
+
+  # UIs
+  powermeter1_ui:
+    build: containers/powermeter1_ui
+    container_name: PowerMeter1_UI
+    command: ["serve", "-s", "build", "-l", "5000"]
+    ports:
+      - "5000:5000"
+    environment:
+      - REACT_APP_ENDPOINT=http://192.168.0.31:3001/
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.41
+
 
 
 # Modbus TCP network

@@ -6,6 +6,7 @@ import logging
 import constants
 import numpy as np
 import argparse
+from flask_cors import CORS
 from dataset import AusgridDataset
 from scipy.stats import norm
 from threading import Thread
@@ -29,6 +30,7 @@ _logger.addHandler(console_handler)
 
 # create flask app
 app = Flask(__name__)
+CORS(app)
 
 ###########################################################
 # Private Function: generate_norm_power

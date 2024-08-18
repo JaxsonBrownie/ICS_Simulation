@@ -43,6 +43,16 @@ Below are descriptions of other files relevant to the simulation.
 - `src/constants.py`: Holds constant values that are used throughout the simulation.
 - `src/dataset.py`: Contains a class that handles extracting required data from a dataset.
 
+## Modbus Mapping
+### HMI 1
+- read solar panel power meter- Holding Register 20 (40021)
+- read the current power input - Coil 10 (00011)
+
+### PLC 1 & 2
+Address space:
+- Coil 10 (00011) - solar (ON) mains (OFF)
+- Holding Register 20 (40021) - solar panel power meter (Float)
+
 ---
 ### Contributors:
 - Jaxson Brown

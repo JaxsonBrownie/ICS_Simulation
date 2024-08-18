@@ -30,9 +30,9 @@ sleep 2
 echo "Revoking sudo"
 sudo -k
 
-# Function to create a container directory
-create_container() {
-    echo "Creating directory structure for $1"
+# Function to create a component container directory
+create_component_container() {
+    echo "Creating component directory for $1"
     lowercase=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
     mkdir containers/$lowercase
@@ -40,12 +40,27 @@ create_container() {
 
     # Copy container-specific files
     cp src/$2 containers/$lowercase/src
-    cp docker-files/Dockerfile containers/$lowercase
+    cp docker-files/component/Dockerfile containers/$lowercase
 
     # Copy global files to each container
     cp src/dataset.py containers/$lowercase/src
     cp src/constants.py containers/$lowercase/src
-    cp datasets/solar-home-data.csv containers/$lowercase/src
+    cp src/datasets/solar-home-data.csv containers/$lowercase/src
+}
+
+# Function to create a ui container directory
+create_ui_container() {
+    echo "Creating user interface directory for $1"
+    lowercase=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+    mkdir containers/$lowercase
+    mkdir containers/$lowercase/src
+
+    # Copy source code
+    cp -r src/$2/. containers/$lowercase/src/
+
+    # Copy container-specific files
+    cp docker-files/ui/Dockerfile containers/$lowercase
 }
 
 # Function to cleanup serial ports
@@ -57,25 +72,28 @@ cleanup() {
 trap cleanup EXIT
 
 # HMI
-create_container HMI HMI.py
+create_component_container HMI HMI.py
 
 # PLC1
-create_container PLC1 PLC.py
+create_component_container PLC1 PLC.py
 
 # PLC2
-create_container PLC2 PLC.py
+create_component_container PLC2 PLC.py
 
 # PowerMeter1
-create_container PowerMeter1 PowerMeter.py
+create_component_container PowerMeter1 powermeter.py
+
+# PowerMeter1_UI
+create_ui_container PowerMeter1_UI powermeter_ui
 
 # PowerMeter2
-create_container PowerMeter2 PowerMeter.py
+create_component_container PowerMeter2 powermeter.py
 
 # TransferSwitch1
-create_container TransferSwitch1 TransferSwitch.py
+create_component_container TransferSwitch1 transferswitch.py
 
 # TransferSwitch2
-create_container TransferSwitch2 TransferSwitch.py
+create_component_container TransferSwitch2 transferswitch.py
 
 # Build containers
 echo "Building containers"

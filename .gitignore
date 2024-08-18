@@ -1,2 +1,9 @@
-.venv/
+# project specific ignores
 containers/
+
+# python ignores
+.venv/
+
+# react ignores
+node_modules/
+build/
