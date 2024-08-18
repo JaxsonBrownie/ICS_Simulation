@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function App() {
   // get environment variables
-  //const apiUrl = process.env.REACT_APP_ENDPOINT;
-  //console.log(apiUrl);
-  const apiUrl = "http://localhost:3001/"
+  const apiUrl = process.env.REACT_APP_ENDPOINT;
 
   // initialise state hooks
   const [data, setData] = useState([]);
@@ -15,7 +13,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
        // Fetch data from the API endpoint
-      fetch(apiUrl) //change webport to environment variable???? AHHHH THIS IS GONNA TAKE FOREVER (can do later)
+      fetch(apiUrl)
       .then(response => {
         // check for errors
         if (!response.ok) {

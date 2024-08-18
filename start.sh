@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run this script to create all the docker containers and to start them through Docker Compose
-# Ensure Docker and Docker Compose is install on the host system
+# Ensure Docker and Docker Compose is installed on the host system
 
 if [ "$EUID" -ne 0 ]; then
     echo "This script must be run as root. Please use sudo."
@@ -51,13 +51,17 @@ create_component_container() {
 # Function to create a ui container directory
 create_ui_container() {
     echo "Creating user interface directory for $1"
+    echo "Frontend will be for backend at $3"
     lowercase=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
     mkdir containers/$lowercase
     mkdir containers/$lowercase/src
 
-    # Copy source code
-    cp -r src/$2/. containers/$lowercase/src/
+    # Build the react frontend
+    echo "REACT_APP_ENDPOINT=$3" > src/$2/.env
+    npm --prefix src/$2 run build
+    cp -r src/$2/build containers/$lowercase/src
+    rm src/$2/.env
 
     # Copy container-specific files
     cp docker-files/ui/Dockerfile containers/$lowercase
@@ -84,7 +88,7 @@ create_component_container PLC2 PLC.py
 create_component_container PowerMeter1 powermeter.py
 
 # PowerMeter1_UI
-create_ui_container PowerMeter1_UI powermeter_ui
+create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 
 # PowerMeter2
 create_component_container PowerMeter2 powermeter.py

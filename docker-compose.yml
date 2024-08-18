@@ -90,13 +90,16 @@ services:
 
   # UIs
   powermeter1_ui:
-    build: containers/powermeter1_ui
+    build: 
+      context: containers/powermeter1_ui
+      #args:
+      #  - REACT_APP_ENDPOINT=http://192.168.0.31:3001/
+    #environment:
+    #  REACT_APP_ENDPOINT: "FUCK"
     container_name: PowerMeter1_UI
     command: ["serve", "-s", "build", "-l", "5000"]
     ports:
       - "5000:5000"
-    environment:
-      - REACT_APP_ENDPOINT=http://192.168.0.31:3001/
     networks:
       vlan1:
         ipv4_address: 192.168.0.41
