@@ -15,7 +15,13 @@ from pymodbus.server import StartSerialServer
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer
 
+# enum to represent the switch state
+class TRANSFER_SWITCH(Enum):
+    SOLAR = True
+    MAINS = False
+
 # set global variables
+switch_value = TRANSFER_SWITCH.MAINS
 pm_reading = 0
 time_reading = 0
 
@@ -28,9 +34,13 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
 
-# create flask app
-app = Flask(__name__)
-CORS(app)
+# create powermeter flask app
+pm_app = Flask(__name__)
+CORS(pm_app)
+
+# create transfer switch flask app
+ts_app = Flask(__name__)
+CORS(ts_app)
 
 ###########################################################
 # Private Function: generate_norm_power
@@ -95,136 +105,6 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
             time_reading += 30
             time.sleep(constants.PM_LOOP_SPEED)
 
-###########################################################
-# Function: pm_server
-# Purpose: Starts the Modbus RTU server in a separate thread
-###########################################################
-def pm_server(context, client_com):
-    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
-
-###########################################################
-# Wrapped Function: index
-# Purpose: Endpoint to return data on the power meter.
-#   Includes data on the power meter readings and time.
-###########################################################
-@app.route('/')
-def index():
-    global pm_reading, time_reading
-    return jsonify(
-        {
-            "pm_reading" : pm_reading,
-            "time" : time_reading
-        })
-###########################################################
-# Special Function: __main__
-# Purpose: Sets up the Modbus RTU server for holding values
-#   from the simulated HIL.
-###########################################################
-if __name__ == '__main__':
-    # pass args
-    parser = argparse.ArgumentParser(description="Power Meter")
-    
-    # Add arguments
-    parser.add_argument('-c', '--comm', type=str, help='Comm port for the power meter')
-    parser.add_argument('-s', '--slave', type=int, help='Modbus RTU slave id')
-    parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
-
-    # Parse the arguments
-    args = parser.parse_args()
-    client_com = args.comm
-    slave_id = args.slave
-    webport = args.webport
-
-    # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
-    title = """
-        ------------------------------------------------------
-         _____                       __  __      _
-        |  __ \                     |  \/  |    | |
-        | |__) |____      _____ _ __| \  / | ___| |_ ___ _ __
-        |  ___/ _ \ \ /\ / / _ \ '__| |\/| |/ _ \ __/ _ \ '__|
-        | |  | (_) \ V  V /  __/ |  | |  | |  __/ ||  __/ |
-        |_|   \___/ \_/\_/ \___|_|  |_|  |_|\___|\__\___|_|
-        ------------------------------------------------------
-        """
-    print(title)
-
-    # generate dataset to simulate power meter recordings
-    pm_data = _read_solar_panel_dataset("solar-home-data.csv")  # note: this csv file gets copied into the directory when the containers are made
-
-    # create input register default data block
-    data_block = ModbusSequentialDataBlock.create()
-
-    # create a Modbus slave context with the data block
-    slave = ModbusSlaveContext(ir=data_block, zero_mode=True)
-    context = ModbusServerContext(slaves={slave_id: slave}, single=False)
-
-    # start the power meter measurement update thread
-    tp_pm = Thread(target=power_meter, args=(data_block, pm_data))
-    tp_pm.daemon = True
-    tp_pm.start()
-
-    # start the Modbus RTU server
-    _logger.info("Starting Power Meter")
-    tp_server = Thread(target=pm_server, args=(context, client_com))
-    tp_server.daemon = True
-    tp_server.start()
-
-    # start flask web server (without terminal logs)
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR) 
-    app.run(host="0.0.0.0", port=webport)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#!/usr/bin/env python3
-
-import time
-import logging
-import sys
-import constants
-import argparse
-from flask_cors import CORS
-from flask import Flask, jsonify
-from enum import Enum
-from threading import Thread
-from pymodbus.server import StartSerialServer
-from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer
-
-# enum to represent the switch state
-class TRANSFER_SWITCH(Enum):
-    SOLAR = True
-    MAINS = False
-
-# set global variables
-switch_value = TRANSFER_SWITCH.MAINS
-
-# create logger
-_logger = logging.getLogger(__name__)
-_logger.setLevel(logging.INFO)
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-_logger.addHandler(console_handler)
-
-# create flask app
-app = Flask(__name__)
-CORS(app)
 
 ###########################################################
 # Function: transfer_switch
@@ -249,12 +129,44 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
 
         time.sleep(constants.TS_POLL_SPEED)
 
+
+
+
+
+
+
+
+###########################################################
+# Function: pm_server
+# Purpose: Starts the Modbus RTU server in a separate thread
+###########################################################
+def pm_server(context, client_com):
+    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+
 ###########################################################
 # Function: ts_server
 # Purpose: Starts the Modbus RTU server in a separate thread
 ###########################################################
 def ts_server(context, client_com):
     StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
+
+
+
+
+
+###########################################################
+# Wrapped Function: index
+# Purpose: Endpoint to return data on the power meter.
+#   Includes data on the power meter readings and time.
+###########################################################
+@app.route('/')
+def index():
+    global pm_reading, time_reading
+    return jsonify(
+        {
+            "pm_reading" : pm_reading,
+            "time" : time_reading
+        })
 
 ###########################################################
 # Wrapped Function: index
@@ -271,57 +183,75 @@ def index():
 
 ###########################################################
 # Special Function: __main__
-# Purpose: Sets up the Modbus RTU server for the simulated
-#   HIL of the transfer switch. Takes 1 arg:
-#   argv[1] = transfer switch comm port
+# Purpose: Sets up the Modbus RTU server for holding values
+#   from the simulated HIL.
 ###########################################################
 if __name__ == '__main__':
     # pass args
-    parser = argparse.ArgumentParser(description="Transfer Switch")
+    parser = argparse.ArgumentParser(description="Hardware-in-the-Loop")
     
     # Add arguments
-    parser.add_argument('-c', '--comm', type=str, help='Comm port for the transfer switch')
-    parser.add_argument('-s', '--slave', type=int, help='Modbus RTU slave id')
-    parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
+    parser.add_argument('-c', '--comm', type=str, help='Comm port for the serial Modbus server')
+    parser.add_argument('-s1', '--pm_slave', type=int, help='Modbus RTU slave id for the power meter')
+    parser.add_argument('-s2', '--ts_slave', type=int, help='Modbus RTU slave id for the transfer switch')
+    parser.add_argument('-P1', '--pm_webport', type=int, help='The port number for the power meter web server')
+    parser.add_argument('-P2', '--ts_webport', type=int, help='The port number for the transfer switch web server')
 
     # Parse the arguments
     args = parser.parse_args()
-    client_com = args.comm
-    slave_id = args.slave
-    webport = args.webport
-    
+    comm = args.comm
+    pm_slave_id = args.pm_slave
+    ts_slave_id = args.ts_slave
+    pm_webport = args.pm_webport
+    ts_webport = args.ts_webport
+
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """
-        ----------------------------------------------------------------------
-          _______                   __          _____         _ _       _     
-         |__   __|                 / _|        / ____|       (_) |     | |    
-            | |_ __ __ _ _ __  ___| |_ ___ _ _| (_____      ___| |_ ___| |__  
-            | | '__/ _` | '_ \/ __|  _/ _ \ '__\___ \ \ /\ / / | __/ __| '_ \ 
-            | | | | (_| | | | \__ \ ||  __/ |  ____) \ V  V /| | || (__| | | |
-            |_|_|  \__,_|_| |_|___/_| \___|_| |_____/ \_/\_/ |_|\__\___|_| |_|
-        ----------------------------------------------------------------------
+        ---------------------
+         _    _ _____ _      
+        | |  | |_   _| |     
+        | |__| | | | | |     
+        |  __  | | | | |     
+        | |  | |_| |_| |____ 
+        |_|  |_|_____|______|
+        ---------------------
         """
     print(title)
 
-    # create coil default data block
-    data_block = ModbusSequentialDataBlock.create()
+    # generate dataset to simulate power meter recordings
+    pm_data = _read_solar_panel_dataset("solar-home-data.csv")  # note: this csv file gets copied into the directory when the containers are made
 
-    # create a Modbus slave context with the data block
-    slave = ModbusSlaveContext(co=data_block, zero_mode=True)
-    context = ModbusServerContext(slaves={slave_id: slave}, single=False)
+    # create data blocks for the pm and ts
+    pm_data_block = ModbusSequentialDataBlock.create()
+    ts_data_block = ModbusSequentialDataBlock.create()
+
+    # create pm slave
+    pm_slave = ModbusSlaveContext(ir=pm_data_block, zero_mode=True)
+    
+    # create ts slave
+    ts_slave = ModbusSlaveContext(co=ts_data_block, zero_mode=True)
+    
+    # create the context for the two slaves
+    context = ModbusServerContext(slaves={pm_slave_id : pm_slave, ts_slave_id : ts_slave}, single=False)
+
+    # start the power meter measurement update thread
+    tp_pm = Thread(target=power_meter, args=(pm_data_block, pm_data))
+    tp_pm.daemon = True
+    tp_pm.start()
 
     # start the transfer switch thread
-    tp_server = Thread(target=transfer_switch, args=(data_block,))
+    tp_server = Thread(target=transfer_switch, args=(ts_data_block,))
     tp_server.daemon = True
     tp_server.start()
 
     # start the Modbus RTU server
-    _logger.info("Starting Transfer Switch")
-    tp_server = Thread(target=ts_server, args=(context, client_com))
+    _logger.info("Starting Power Meter")
+    tp_server = Thread(target=pm_server, args=(context, comm))
     tp_server.daemon = True
     tp_server.start()
-    
-    # start flask web server (without terminal logs)
+
+    # start flask web servers (without terminal logs)
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR) 
-    app.run(host="0.0.0.0", port=webport)
+    pm_app.run(host="0.0.0.0", port=pm_webport)
+    ts_app.run(host="0.0.0.0", port=ts_webport)

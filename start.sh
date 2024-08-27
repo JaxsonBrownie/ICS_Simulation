@@ -19,10 +19,10 @@ socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11 &
 serial1=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS12 pty,raw,echo=0,link=/dev/ttyS13 &
 serial2=$!
-socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
-serial3=$!
-socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
-serial4=$!
+#socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
+#serial3=$!
+#socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
+#serial4=$!
 
 sleep 2
 
@@ -72,7 +72,7 @@ create_ui_container() {
 cleanup() {
     echo "Cleaning up serial ports"
     #kill $serial1 $serial2 $serial3 $serial4
-    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 /dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
+    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 #/dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
 }
 trap cleanup EXIT
 
@@ -85,25 +85,28 @@ create_component_container PLC1 PLC.py
 # PLC2
 create_component_container PLC2 PLC.py
 
+# HIL1
+create_component_container HIL1 HIL.py
+
 # PowerMeter1
-create_component_container PowerMeter1 powermeter.py
+#create_component_container PowerMeter1 powermeter.py
 
 # PowerMeter1_UI
 create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 
 # PowerMeter2
-create_component_container PowerMeter2 powermeter.py
+#create_component_container PowerMeter2 powermeter.py
 
 # PowerMeter2_UI
 create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.33:3003/
 
 # TransferSwitch1
-create_component_container TransferSwitch1 transferswitch.py
+#create_component_container TransferSwitch1 transferswitch.py
 
 create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.32:3002/
 
 # TransferSwitch2
-create_component_container TransferSwitch2 transferswitch.py
+#create_component_container TransferSwitch2 transferswitch.py
 
 create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.34:3004/
 
