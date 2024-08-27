@@ -21,9 +21,9 @@ lock = Lock()
 
 # create logger
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.INFO)
+_logger.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
@@ -63,10 +63,10 @@ def plc_server(server : ModbusServer):
 #   the solar panel. The values are then written to the PLCs
 #   Modbus TCP server data bank.
 ###########################################################
-def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank):
+def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank, slave_id):
     while True:
         # read the power meter input register
-        pm_value = client.read_input_registers(20, 1, unit=1)
+        pm_value = client.read_input_registers(20, 1, slave=slave_id)
         if not pm_value.isError():
             # write the Modbus RTU power meter input to the Modbus TCP server memory (same address)
             _logger.debug(f'Power Meter: {pm_value.registers} °C')
@@ -83,7 +83,7 @@ def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank):
 #   threshold, then write to the transfer switch to either
 #   switch the mains power or solar power.
 ###########################################################
-def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank, switching_threshold):
+def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank, slave_id, switching_threshold):
     switch_value = TRANSFER_SWITCH.MAINS
 
     while True:
@@ -96,7 +96,7 @@ def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank
                 switch_value = TRANSFER_SWITCH.MAINS
             else:
                 switch_value = TRANSFER_SWITCH.SOLAR
-        client.write_coil(10, switch_value.value)
+        client.write_coil(10, switch_value.value, slave=slave_id)
         #_logger.info(f'Transfer Switch: {switch_value.value}')
 
         # write coil transfer switch value to plc's server memory (same address)
@@ -116,11 +116,15 @@ if __name__ == '__main__':
     # Add arguments
     parser.add_argument('-1', '--pmcomm', type=str, help='Comm port for the power meter')
     parser.add_argument('-2', '--tscomm', type=str, help='Comm port for the transfer switch')
+    parser.add_argument('-s1', '--slave1', type=int, help='Slave id for the power meter')
+    parser.add_argument('-s2', '--slave2', type=int, help='Slave id for the transfer switch')
 
     # Parse the arguments
     args = parser.parse_args()
     client1_com = args.pmcomm
     client2_com = args.tscomm
+    slave_id1 = args.slave1
+    slave_id2 = args.slave2
     
     server_ip = "0.0.0.0"
     server_port = 5020
@@ -156,7 +160,7 @@ if __name__ == '__main__':
 
     # start the power meter client thread
     _logger.info(f"Starting PLC Power Meter Client")
-    tp_client = Thread(target=plc_client_power_meter, args=(pm_client, data_bank))
+    tp_client = Thread(target=plc_client_power_meter, args=(pm_client, data_bank, slave_id1))
     tp_client.daemon = True
     tp_client.start()
 
@@ -170,7 +174,7 @@ if __name__ == '__main__':
     switching_threshold = _get_ats_threshold("solar-home-data.csv")
     
     _logger.info(f"ATS threshold value: {switching_threshold}")
-    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, switching_threshold))
+    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, slave_id2, switching_threshold))
     tp_client.daemon = True
     tp_client.start()
 

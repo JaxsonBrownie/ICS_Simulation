@@ -6,7 +6,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS10:/dev/ttyS10"
-    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS10", "--webport", "3001"]
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS10", "--slave", "1", "--webport", "3001"]
     ports:
       - "3001:3001"
     networks:
@@ -19,7 +19,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS12:/dev/ttyS12"
-    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS12", "--webport", "3002"]
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS12", "--slave", "2", "--webport", "3002"]
     ports:
       - "3002:3002"
     networks:
@@ -32,7 +32,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS14:/dev/ttyS14"
-    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS14", "--webport", "3003"]
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS14", "--slave", "3", "--webport", "3003"]
     ports:
       - "3003:3003"
     networks:
@@ -45,7 +45,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS16:/dev/ttyS16"
-    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS16", "--webport", "3004"]
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS16", "--slave", "4", "--webport", "3004"]
     ports:
       - "3004:3004"
     networks:
@@ -60,7 +60,7 @@ services:
     volumes:
       - "/dev/ttyS11:/dev/ttyS11"
       - "/dev/ttyS13:/dev/ttyS13"
-    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS11", "--tscomm",  "/dev/ttyS13"]
+    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS11", "--tscomm", "/dev/ttyS13", "--slave1", "1", "--slave2", "2"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
@@ -72,7 +72,7 @@ services:
     volumes:
       - "/dev/ttyS15:/dev/ttyS15"
       - "/dev/ttyS17:/dev/ttyS17"
-    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS15", "--tscomm", "/dev/ttyS17"]
+    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS15", "--tscomm", "/dev/ttyS17", "--slave1", "3", "--slave2", "4"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.22

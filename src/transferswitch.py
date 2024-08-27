@@ -89,11 +89,13 @@ if __name__ == '__main__':
     
     # Add arguments
     parser.add_argument('-c', '--comm', type=str, help='Comm port for the transfer switch')
+    parser.add_argument('-s', '--slave', type=int, help='Modbus RTU slave id')
     parser.add_argument('-P', '--webport', type=str, help='The port number for the web server')
 
     # Parse the arguments
     args = parser.parse_args()
     client_com = args.comm
+    slave_id = args.slave
     webport = args.webport
     
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
@@ -113,8 +115,8 @@ if __name__ == '__main__':
     data_block = ModbusSequentialDataBlock.create()
 
     # create a Modbus slave context with the data block
-    store = ModbusSlaveContext(co=data_block, zero_mode=True)
-    context = ModbusServerContext(slaves=store, single=True)
+    slave = ModbusSlaveContext(co=data_block, zero_mode=True)
+    context = ModbusServerContext(slaves={slave_id: slave}, single=False)
 
     # start the transfer switch thread
     tp_server = Thread(target=transfer_switch, args=(data_block,))
