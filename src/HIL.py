@@ -6,6 +6,7 @@ import logging
 import constants
 import numpy as np
 import argparse
+from enum import Enum
 from flask_cors import CORS
 from dataset import AusgridDataset
 from scipy.stats import norm
@@ -129,37 +130,26 @@ def transfer_switch(data_bank : ModbusSequentialDataBlock):
 
         time.sleep(constants.TS_POLL_SPEED)
 
-
-
-
-
-
-
-
 ###########################################################
-# Function: pm_server
+# Function: serial_server
 # Purpose: Starts the Modbus RTU server in a separate thread
 ###########################################################
-def pm_server(context, client_com):
+def serial_server(context, client_com):
     StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
 
 ###########################################################
-# Function: ts_server
-# Purpose: Starts the Modbus RTU server in a separate thread
+# Function: app_server
+# Purpose: Runs the Flask endpoint in separate thread
 ###########################################################
-def ts_server(context, client_com):
-    StartSerialServer(context=context, port=client_com, baudrate=9600, timeout=1, framer=ModbusRtuFramer)
-
-
-
-
+def app_server(app, port):
+    app.run(host="0.0.0.0", port=port)
 
 ###########################################################
 # Wrapped Function: index
 # Purpose: Endpoint to return data on the power meter.
 #   Includes data on the power meter readings and time.
 ###########################################################
-@app.route('/')
+@pm_app.route('/')
 def index():
     global pm_reading, time_reading
     return jsonify(
@@ -173,7 +163,7 @@ def index():
 # Purpose: Endpoint to return data on the transfer switch.
 #   Includes only the switch state.
 ###########################################################
-@app.route('/')
+@ts_app.route('/')
 def index():
     global switch_value
     return jsonify(
@@ -246,12 +236,20 @@ if __name__ == '__main__':
 
     # start the Modbus RTU server
     _logger.info("Starting Power Meter")
-    tp_server = Thread(target=pm_server, args=(context, comm))
+    tp_server = Thread(target=serial_server, args=(context, comm))
     tp_server.daemon = True
     tp_server.start()
 
     # start flask web servers (without terminal logs)
     log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR) 
-    pm_app.run(host="0.0.0.0", port=pm_webport)
-    ts_app.run(host="0.0.0.0", port=ts_webport)
+    log.setLevel(logging.ERROR)
+
+    tp_app = Thread(target=app_server, args=(pm_app, pm_webport))
+    tp_app.daemon = True
+    tp_app.start()
+
+    tp_app = Thread(target=app_server, args=(ts_app, ts_webport))
+    tp_app.daemon = True
+    tp_app.start()
+
+    tp_app.join()

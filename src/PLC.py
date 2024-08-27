@@ -21,9 +21,9 @@ lock = Lock()
 
 # create logger
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
+_logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
@@ -114,17 +114,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Programmable Logic Controller")
     
     # Add arguments
-    parser.add_argument('-1', '--pmcomm', type=str, help='Comm port for the power meter')
-    parser.add_argument('-2', '--tscomm', type=str, help='Comm port for the transfer switch')
-    parser.add_argument('-s1', '--slave1', type=int, help='Slave id for the power meter')
-    parser.add_argument('-s2', '--slave2', type=int, help='Slave id for the transfer switch')
+    parser.add_argument('-c', '--comm', type=str, help='Comm port for the serial Modbus client connection')
+    parser.add_argument('-s1', '--pm_slave', type=int, help='Modbus RTU slave id for the power meter')
+    parser.add_argument('-s2', '--ts_slave', type=int, help='Modbus RTU slave id for the transfer switch')
 
     # Parse the arguments
     args = parser.parse_args()
-    client1_com = args.pmcomm
-    client2_com = args.tscomm
-    slave_id1 = args.slave1
-    slave_id2 = args.slave2
+    comm = args.comm
+    pm_slave_id = args.pm_slave
+    ts_slave_id = args.ts_slave
     
     server_ip = "0.0.0.0"
     server_port = 5020
@@ -143,7 +141,7 @@ if __name__ == '__main__':
     print(title)
 
     #----------------------------------------------------------------------
-    # init modbus server
+    # init Modbus TCP server
     data_bank = DataBank()
     server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
 
@@ -154,27 +152,23 @@ if __name__ == '__main__':
     tp_server.start()
 
     #----------------------------------------------------------------------
-    # init power meter modbus client
-    pm_client = ModbusSerialClient(port=client1_com, baudrate=9600, timeout=1)
-    pm_client.connect()
+    # init Modbus RTU client
+    client = ModbusSerialClient(port=comm, baudrate=9600, timeout=1)
+    client.connect()
 
     # start the power meter client thread
     _logger.info(f"Starting PLC Power Meter Client")
-    tp_client = Thread(target=plc_client_power_meter, args=(pm_client, data_bank, slave_id1))
+    tp_client = Thread(target=plc_client_power_meter, args=(client, data_bank, pm_slave_id))
     tp_client.daemon = True
     tp_client.start()
 
-    #----------------------------------------------------------------------
-    # init transfer switch modbus client
-    ts_client = ModbusSerialClient(port=client2_com, baudrate=9600, timeout=1)
-    ts_client.connect()
-
-    # start the transfer switch client thread
+    # get transfer switch switching threshol
     _logger.info(f"Starting PLC Transfer Switch Client")
     switching_threshold = _get_ats_threshold("solar-home-data.csv")
-    
+
+    # start the transfer switch client thread    
     _logger.info(f"ATS threshold value: {switching_threshold}")
-    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, slave_id2, switching_threshold))
+    tp_client = Thread(target=plc_client_transfer_switch, args=(client, data_bank, ts_slave_id, switching_threshold))
     tp_client.daemon = True
     tp_client.start()
 

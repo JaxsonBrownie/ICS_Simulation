@@ -59,7 +59,7 @@ create_ui_container() {
 
     # Build the react frontend (creating a temporary env file to pass the environment variables during build)
     echo "REACT_APP_ENDPOINT=$3" > src/$2/.env
-    npm --prefix src/$2 run build
+    npm --prefix src/$2 run build > /dev/null
     cp -r src/$2/build containers/$lowercase/src
     rm src/$2/.env
     rm -r src/$2/build
@@ -88,6 +88,9 @@ create_component_container PLC2 PLC.py
 # HIL1
 create_component_container HIL1 HIL.py
 
+# HIL2
+create_component_container HIL2 HIL.py
+
 # PowerMeter1
 #create_component_container PowerMeter1 powermeter.py
 
@@ -98,17 +101,17 @@ create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 #create_component_container PowerMeter2 powermeter.py
 
 # PowerMeter2_UI
-create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.33:3003/
+create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
 
 # TransferSwitch1
 #create_component_container TransferSwitch1 transferswitch.py
 
-create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.32:3002/
+create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.31:3002/
 
 # TransferSwitch2
 #create_component_container TransferSwitch2 transferswitch.py
 
-create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.34:3004/
+create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.32:3004/
 
 # Build containers
 echo "Building containers"

@@ -52,6 +52,35 @@ services:
   #    vlan1:
   #      ipv4_address: 192.168.0.34
 
+  # HILs
+  hil1:
+    build: containers/hil1
+    container_name: HIL1
+    privileged: true
+    volumes:
+      - "/dev/ttyS10:/dev/ttyS10"
+    command: ["python3", "HIL.py", "--comm", "/dev/ttyS10", "--pm_slave", "1", "--ts_slave", "2", "--pm_webport", "3001", "--ts_webport", "3002"]
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.31
+
+  hil2:
+    build: containers/hil2
+    container_name: HIL2
+    privileged: true
+    volumes:
+      - "/dev/ttyS12:/dev/ttyS12"
+    command: ["python3", "HIL.py", "--comm", "/dev/ttyS12", "--pm_slave", "3", "--ts_slave", "4", "--pm_webport", "3003", "--ts_webport", "3004"]
+    ports:
+      - "3003:3003"
+      - "3004:3004"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.32
+
   # PLCs
   plc1:
     build: containers/plc1
@@ -59,8 +88,7 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS11:/dev/ttyS11"
-      - "/dev/ttyS13:/dev/ttyS13"
-    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS11", "--tscomm", "/dev/ttyS13", "--slave1", "1", "--slave2", "2"]
+    command: ["python3", "PLC.py", "--comm", "/dev/ttyS11", "--pm_slave", "1", "--ts_slave", "2"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
@@ -70,9 +98,8 @@ services:
     container_name: PLC2
     privileged: true
     volumes:
-      - "/dev/ttyS15:/dev/ttyS15"
-      - "/dev/ttyS17:/dev/ttyS17"
-    command: ["python3", "PLC.py", "--pmcomm", "/dev/ttyS15", "--tscomm", "/dev/ttyS17", "--slave1", "3", "--slave2", "4"]
+      - "/dev/ttyS13:/dev/ttyS13"
+    command: ["python3", "PLC.py", "--comm", "/dev/ttyS13", "--pm_slave", "3", "--ts_slave", "4"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.22
