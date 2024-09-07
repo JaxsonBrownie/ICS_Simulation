@@ -116,33 +116,47 @@ services:
         ipv4_address: 192.168.0.11
 
   # UIs
-  powermeter1_ui:
-    build: containers/powermeter1_ui
-    container_name: PowerMeter1_UI
-    command: ["serve", "-s", "build", "-l", "5001"]
-    ports:
-      - "5001:5001"
+  #powermeter1_ui:
+  #  build: containers/powermeter1_ui
+  #  container_name: PowerMeter1_UI
+  #  command: ["serve", "-s", "build", "-l", "5001"]
+  #  ports:
+  #    - "5001:5001"
 
-  powermeter2_ui:
-    build: containers/powermeter2_ui
-    container_name: PowerMeter2_UI
-    command: ["serve", "-s", "build", "-l", "5003"]
-    ports:
-      - "5003:5003"
+  #powermeter2_ui:
+  #  build: containers/powermeter2_ui
+  #  container_name: PowerMeter2_UI
+  #  command: ["serve", "-s", "build", "-l", "5003"]
+  #  ports:
+  #    - "5003:5003"
 
-  transferswitch1_ui:
-    build: containers/transferswitch1_ui
-    container_name: TransferSwitch1_UI
-    command: ["serve", "-s", "build", "-l", "5002"]
-    ports:
-      - "5002:5002"
+  #transferswitch1_ui:
+  #  build: containers/transferswitch1_ui
+  #  container_name: TransferSwitch1_UI
+  #  command: ["serve", "-s", "build", "-l", "5002"]
+  #  ports:
+  #    - "5002:5002"
 
-  transferswitch2_ui:
-    build: containers/transferswitch2_ui
-    container_name: TransferSwitch2_UI
-    command: ["serve", "-s", "build", "-l", "5004"]
+  #transferswitch2_ui:
+  #  build: containers/transferswitch2_ui
+  #  container_name: TransferSwitch2_UI
+  #  command: ["serve", "-s", "build", "-l", "5004"]
+  #  ports:
+  #    - "5004:5004"
+    
+  hil1_ui:
+    build: containers/hil1_ui
+    container_name: HIL1_UI
+    command: ["serve", "-s", "build", "-l", "4001"]
     ports:
-      - "5004:5004"
+      - "4001:4001"
+
+  hil2_ui:
+    build: containers/hil2_ui
+    container_name: HIL2_UI
+    command: ["serve", "-s", "build", "-l", "4002"]
+    ports:
+      - "4002:4002"
 
 
 

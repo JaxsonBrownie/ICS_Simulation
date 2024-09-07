@@ -68,6 +68,27 @@ create_ui_container() {
     cp docker-files/ui/Dockerfile containers/$lowercase
 }
 
+# Function to create a ui container directory for the combined HIL ui
+create_hil_ui_container() {
+    echo "Creating user interface directory for $1"
+    echo "Frontend will be for backend at $3 (power meter) and $4 (transfer switch)"
+    lowercase=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+    mkdir containers/$lowercase
+    mkdir containers/$lowercase/src
+
+    # Build the react frontend (creating a temporary env file to pass the environment variables during build)
+    echo "REACT_APP_ENDPOINT_PM=$3" >> src/$2/.env
+    echo "REACT_APP_ENDPOINT_TS=$4" >> src/$2/.env
+    npm --prefix src/$2 run build #> /dev/null
+    cp -r src/$2/build containers/$lowercase/src
+    rm src/$2/.env
+    rm -r src/$2/build
+
+    # Copy container-specific files
+    cp docker-files/ui/Dockerfile containers/$lowercase
+}
+
 # Function to cleanup serial ports
 cleanup() {
     echo "Cleaning up serial ports"
@@ -95,23 +116,31 @@ create_component_container HIL2 HIL.py
 #create_component_container PowerMeter1 powermeter.py
 
 # PowerMeter1_UI
-create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
+#create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
+
+# HIL_UI1
+create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
 
 # PowerMeter2
 #create_component_container PowerMeter2 powermeter.py
 
 # PowerMeter2_UI
-create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
+#create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
+
+# HIL_UI2
+create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
 
 # TransferSwitch1
 #create_component_container TransferSwitch1 transferswitch.py
 
-create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.31:3002/
+# TransferSwitch1_UI
+#create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.31:3002/
 
 # TransferSwitch2
 #create_component_container TransferSwitch2 transferswitch.py
 
-create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.32:3004/
+# TransferSwitch2_UI
+#create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.32:3004/
 
 # Build containers
 echo "Building containers"
