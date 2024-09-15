@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
+import PLC from './components/PLC';
 
 function App() {
   // get environment variables
   const apiUrl = process.env.REACT_APP_ENDPOINT;
+  //const apiUrl = "127.0.0.1";
 
   // initialise state hooks
   const [data, setData] = useState([]);
@@ -35,50 +38,29 @@ function App() {
 
     // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(interval);
-  }, [])
-
-  /*
-  Function: calcTime
-  Purpose: Takes in the total amount of minutes that have passed and
-    formats it into HR:MN
-  */
-  const calcTime = (totalMinutes) => {
-    let hours = Math.floor(totalMinutes / 60) % 24;
-    hours = hours < 10 ? `0${hours}` : hours;
-    
-    let minutes = totalMinutes % 60;
-    minutes = minutes < 10 ? `0${minutes}` : minutes;
-  
-    return { hours, minutes };
-  }
+  }, [apiUrl])
 
   // render loading or error
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}. Simulation may be offline</p>;
-
-  // calculate time
-  const formatTime = calcTime(data.time);
-  const hour = formatTime.hours;
-  const minute = formatTime.minutes;
-
-  // calculate day cycle
-  if (hour < 6) {
-    dayCycle = "Morning"
-  } else if (hour < 12) {
-    dayCycle = "Day"
-  } else if (hour < 18) {
-    dayCycle = "Afternoon"
-  } else {
-    dayCycle = "Night"
-  }
   
   // render
   return (
     <div>
-      <h3>Time: {hour}:{minute}</h3>
-      <h3>Current Day Cycle: {dayCycle}</h3>
-      <br></br>
-      <h3>Power Meter Reading: {data.pm_reading}</h3>
+      <Container>
+        <Row>
+          <Col>
+            <h2>Household 1</h2>
+            <p>Consists of PLC1 and HIL1 components.</p>
+            <PLC hr={data.plc1.hr[0]} coil={data.plc1.coil[0]}/>
+          </Col>
+          <Col>
+            <h2>Household 2</h2>
+            <p>Consists of PLC2 and HIL2 components.</p>
+            <PLC hr={data.plc2.hr[0]} coil={data.plc2.coil[0]}/>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }

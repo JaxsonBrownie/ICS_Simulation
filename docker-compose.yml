@@ -158,6 +158,13 @@ services:
     ports:
       - "4002:4002"
 
+  hmi_ui:
+    build: containers/hmi_ui
+    container_name: HMI_UI
+    command: ["serve", "-s", "build", "-l", "1002"]
+    ports:
+      - "1002:1002"
+
 
 
 # Modbus TCP network

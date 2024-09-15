@@ -19,7 +19,7 @@ class AusgridDataset:
 	###########################################################
 	def readFile(self, filename):
 		file_rows = []
-		with open(filename, 'r') as csvfile:
+		with open(filename, encoding="utf8", errors='ignore') as csvfile:
 			csvreader = csv.reader(csvfile)
 
 			# ignore first two rows

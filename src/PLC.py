@@ -125,7 +125,7 @@ if __name__ == '__main__':
     ts_slave_id = args.ts_slave
     
     server_ip = "0.0.0.0"
-    server_port = 5020
+    server_port = 502
 
     # (ASCII font "Big" https://patorjk.com/software/taag/#p=display&f=Big)
     title = """

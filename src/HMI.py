@@ -126,7 +126,7 @@ if __name__ == '__main__':
     webport = args.webport
 
     # init modbus PLC1 client
-    client1 = ModbusClient(host=client1_ip, port=5020, unit_id=1)
+    client1 = ModbusClient(host=client1_ip, port=502, unit_id=1)
 
     # start the PLC1 client thread
     _logger.info(f"Starting PLC1 HMI Client: {client1_ip}")
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     tp.start()
 
     # init modbus PLC2 client
-    client2 = ModbusClient(host=client2_ip, port=5020, unit_id=1)
+    client2 = ModbusClient(host=client2_ip, port=502, unit_id=1)
 
     # start the PLC2 client thread
     _logger.info(f"Starting PLC2 HMI Client: {client2_ip}")
