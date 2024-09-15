@@ -3,6 +3,7 @@ containers/
 
 # python ignores
 .venv/
+__pycache__/
 
 # react ignores
 node_modules/
