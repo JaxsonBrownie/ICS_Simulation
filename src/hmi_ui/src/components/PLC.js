@@ -6,7 +6,9 @@ function PLC(props) {
   // render
   return (
     <div>
-      <b>Current solar panel power meter reading: {holding_regs}</b>
+      <b>Current solar panel power meter reading: {holding_regs[0]}</b>
+      <br></br>
+      <b>Switching threshold (mW): {holding_regs[1]}</b>
       <br></br>
       <b>Current input power: {coils ? "Solar Panel Power" : "Mains Power"}</b> 
     </div>

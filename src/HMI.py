@@ -42,7 +42,7 @@ def plc1_client(client : ModbusClient):
 
     # polling loop
     while True:
-        reg_list = client.read_input_registers(20, 1)
+        reg_list = client.read_holding_registers(20, 2)
         coil_list = client.read_coils(10, 1)
 
         # store recorded values
@@ -67,7 +67,7 @@ def plc2_client(client : ModbusClient):
 
     # polling loop
     while True:
-        reg_list = client.read_input_registers(20, 1)
+        reg_list = client.read_holding_registers(20, 2)
         coil_list = client.read_coils(10, 1)
 
         # store recorded values

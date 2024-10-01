@@ -52,12 +52,12 @@ function App() {
           <Col>
             <h2>Household 1</h2>
             <p>Consists of PLC1 and HIL1 components.</p>
-            <PLC hr={data.plc1.hr[0]} coil={data.plc1.coil[0]}/>
+            <PLC hr={data.plc1.hr} coil={data.plc1.coil[0]}/>
           </Col>
           <Col>
             <h2>Household 2</h2>
             <p>Consists of PLC2 and HIL2 components.</p>
-            <PLC hr={data.plc2.hr[0]} coil={data.plc2.coil[0]}/>
+            <PLC hr={data.plc2.hr} coil={data.plc2.coil[0]}/>
           </Col>
         </Row>
       </Container>

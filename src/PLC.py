@@ -8,7 +8,7 @@ import argparse
 from dataset import AusgridDataset
 from enum import Enum
 from threading import Thread, Lock
-from pyModbusTCP.server import ModbusServer, DataBank
+from pyModbusTCP.server import ModbusServer, DataBank, DeviceIdentification
 from pymodbus.client import ModbusSerialClient
 
 # enum to represent the switch state
@@ -65,12 +65,12 @@ def plc_server(server : ModbusServer):
 ###########################################################
 def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank, slave_id):
     while True:
-        # read the power meter input register
-        pm_value = client.read_input_registers(20, 1, slave=slave_id)
+        # read the power meter holding register
+        pm_value = client.read_holding_registers(20, 1, slave=slave_id)
         if not pm_value.isError():
             # write the Modbus RTU power meter input to the Modbus TCP server memory (same address)
             _logger.debug(f'Power Meter: {pm_value.registers} °C')
-            data_bank.set_input_registers(20, pm_value.registers)
+            data_bank.set_holding_registers(20, pm_value.registers)
 
         time.sleep(constants.PM_POLL_SPEED)
 
@@ -86,9 +86,12 @@ def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank, sl
 def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank, slave_id, switching_threshold):
     switch_value = TRANSFER_SWITCH.MAINS
 
+    # write the switching threshold to holding register 21 of the TCP server
+    data_bank.set_holding_registers(21, [switching_threshold])
+
     while True:
-        # read the power meter input register from Modbus TCP server data bank
-        pm_value = data_bank.get_input_registers(20, 1)
+        # read the power meter holding register from Modbus TCP server data bank
+        pm_value = data_bank.get_holding_registers(20, 1)
 
         # set the coil on the transfer switch depending on power output
         if pm_value:
@@ -141,9 +144,29 @@ if __name__ == '__main__':
     print(title)
 
     #----------------------------------------------------------------------
-    # init Modbus TCP server
+    # init Modbus TCP server data bank
     data_bank = DataBank()
-    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True)
+
+    # create device identification
+    vendor_name = "Curtin University".encode("utf-8")
+    product_code = "X7K8P2Z4W9".encode("utf-8")
+    major_minor_revision = "1.3.0".encode("utf-8")
+    vendor_url = "https://www.curtin.edu.au/".encode("utf-8")
+    product_name = "Smart Grid PLC".encode("utf-8")
+    model_name = "PLCv1.3.0".encode("utf-8")
+    user_app_name = "Smart Grid PLC".encode("utf-8")
+
+    device_id = DeviceIdentification(
+        vendor_name=vendor_name,
+        product_code=product_code,
+        major_minor_revision=major_minor_revision,
+        vendor_url=vendor_url,
+        product_name=product_name,
+        model_name=model_name,
+        user_application_name=user_app_name
+        )
+    
+    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True, device_id=device_id)
 
     # start the PLC server thread
     _logger.info(f"Starting PLC Server")
@@ -164,7 +187,7 @@ if __name__ == '__main__':
 
     # get transfer switch switching threshol
     _logger.info(f"Starting PLC Transfer Switch Client")
-    switching_threshold = _get_ats_threshold("solar-home-data.csv")
+    switching_threshold = int(_get_ats_threshold("solar-home-data.csv"))
 
     # start the transfer switch client thread    
     _logger.info(f"ATS threshold value: {switching_threshold}")

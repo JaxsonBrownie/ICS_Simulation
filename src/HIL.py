@@ -85,9 +85,9 @@ def _read_solar_panel_dataset(filename):
 # Function: power_meter
 # Purpose: Simulates a Hardware-in-the-Loop process of a
 #   power meter reading power input from a solar panel.
-#   Writes recorded values to input register 20 (40021)
+#   Writes recorded values to holding register 20
 ###########################################################
-def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
+def power_meter(data_bank_hr : ModbusSequentialDataBlock, pm_data):
     global pm_reading, time_reading
     i = -1
 
@@ -98,9 +98,9 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
         i += 1
 
         for j in range(len(pm_data[i])):
-            # write to input register address 20 value of solar panel meter (40021)
+            # write to holding register address 20 value of solar panel meter
             pm_reading = pm_data[i][j]
-            data_bank.setValues(20, [pm_reading])
+            data_bank_hr.setValues(20, [pm_reading])
 
             _logger.debug(f"SOLAR PANAL THREAD: Day: {i}, Inc: {j}, Value: {pm_reading}")
             time_reading += 30
@@ -113,12 +113,12 @@ def power_meter(data_bank : ModbusSequentialDataBlock, pm_data):
 #   Reads coil value at 10 (00011) and switches to solar power
 #   if true (value 1) or to mains power if false (value 0)
 ###########################################################
-def transfer_switch(data_bank : ModbusSequentialDataBlock):
+def transfer_switch(data_bank_co : ModbusSequentialDataBlock):
     global switch_value
 
     while True:
         # read the switch coil
-        switch_coil = data_bank.getValues(10, 1)
+        switch_coil = data_bank_co.getValues(10, 1)
 
         # set the constant
         if switch_coil:
@@ -168,7 +168,7 @@ def index():
     global switch_value
     return jsonify(
         {
-            "ts_state" : switch_value.value
+            "ts_state" : switch_value.value,
         })
 
 ###########################################################
@@ -212,25 +212,25 @@ if __name__ == '__main__':
     pm_data = _read_solar_panel_dataset("solar-home-data.csv")  # note: this csv file gets copied into the directory when the containers are made
 
     # create data blocks for the pm and ts
-    pm_data_block = ModbusSequentialDataBlock.create()
-    ts_data_block = ModbusSequentialDataBlock.create()
+    pm_data_block_hr = ModbusSequentialDataBlock.create()
+    ts_data_block_co = ModbusSequentialDataBlock.create()
 
     # create pm slave
-    pm_slave = ModbusSlaveContext(ir=pm_data_block, zero_mode=True)
+    pm_slave = ModbusSlaveContext(hr=pm_data_block_hr, zero_mode=True)
     
     # create ts slave
-    ts_slave = ModbusSlaveContext(co=ts_data_block, zero_mode=True)
+    ts_slave = ModbusSlaveContext(co=ts_data_block_co, zero_mode=True)
     
     # create the context for the two slaves
     context = ModbusServerContext(slaves={pm_slave_id : pm_slave, ts_slave_id : ts_slave}, single=False)
 
     # start the power meter measurement update thread
-    tp_pm = Thread(target=power_meter, args=(pm_data_block, pm_data))
+    tp_pm = Thread(target=power_meter, args=(pm_data_block_hr, pm_data))
     tp_pm.daemon = True
     tp_pm.start()
 
     # start the transfer switch thread
-    tp_server = Thread(target=transfer_switch, args=(ts_data_block,))
+    tp_server = Thread(target=transfer_switch, args=(ts_data_block_co))
     tp_server.daemon = True
     tp_server.start()
 
