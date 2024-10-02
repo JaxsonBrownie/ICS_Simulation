@@ -230,7 +230,7 @@ if __name__ == '__main__':
     tp_pm.start()
 
     # start the transfer switch thread
-    tp_server = Thread(target=transfer_switch, args=(ts_data_block_co))
+    tp_server = Thread(target=transfer_switch, args=(ts_data_block_co,))
     tp_server.daemon = True
     tp_server.start()
 
