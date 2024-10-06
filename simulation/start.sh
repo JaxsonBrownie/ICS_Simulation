@@ -8,8 +8,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Reset container directories
-#rm -r containers
-#mkdir containers
+###rm -r containers
+###mkdir containers
 
 rm -r containers/plc*
 
@@ -100,7 +100,7 @@ cleanup() {
 trap cleanup EXIT
 
 # HMI
-#create_component_container HMI HMI.py
+###create_component_container HMI HMI.py
 
 # PLC1
 create_component_container PLC1 PLC.py
@@ -109,10 +109,10 @@ create_component_container PLC1 PLC.py
 create_component_container PLC2 PLC.py
 
 # HIL1
-#create_component_container HIL1 HIL.py
+###create_component_container HIL1 HIL.py
 
 # HIL2
-#create_component_container HIL2 HIL.py
+###create_component_container HIL2 HIL.py
 
 # PowerMeter1
 #create_component_container PowerMeter1 powermeter.py

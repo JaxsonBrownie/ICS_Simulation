@@ -5,6 +5,7 @@ import sys
 import time
 import constants
 import argparse
+import subprocess
 from dataset import AusgridDataset
 from enum import Enum
 from threading import Thread, Lock
@@ -27,6 +28,7 @@ class TRANSFER_SWITCH(Enum):
 
 # set global variables
 lock = Lock()
+restartPLC = False
 
 # create logger
 _logger = logging.getLogger(__name__)
@@ -36,7 +38,7 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
-
+   
 
 ###########################################################
 # Class: CustomModbusServer(ModbusServer)
@@ -45,7 +47,7 @@ _logger.addHandler(console_handler)
 #   diagnostic function.
 ###########################################################
 class CustomModbusServer(ModbusServer):
-
+    
     def __init__(self, host='localhost', port=502, no_block=False, ipv6=False,
                  data_bank=None, data_hdl=None, ext_engine=None, device_id=None):
         super().__init__(host, port, no_block, ipv6, data_bank, data_hdl, ext_engine, device_id)
@@ -93,18 +95,22 @@ class CustomModbusServer(ModbusServer):
         :param session_data: server engine data
         :type session_data: ModbusServer.SessionData
         """
+        # global variables
+        global restartPLC
 
         # pdu alias
         recv_pdu = session_data.request.pdu
         send_pdu = session_data.response.pdu
         # decode pdu
-        (sub_fc, _) = recv_pdu.unpack('>HH', from_byte=1, to_byte=5)
+        (sub_fc, bits) = recv_pdu.unpack('>HH', from_byte=1, to_byte=5)
         # handle sub-function codes
         if sub_fc == 0x0004:    # Force Listen Only Mode
             self._force_listen_only = True
+        elif sub_fc == 0x0001:  # Restart Communications
+            restartPLC = True
 
         # send back reflected packet
-        send_pdu.add_pack('>BHH', recv_pdu.func_code, 0x0004, 0x0000)
+        send_pdu.add_pack('>BHH', recv_pdu.func_code, sub_fc, bits)
 
 ###########################################################
 # Private Function: get_ats_threshold
@@ -142,15 +148,17 @@ def plc_server(server : ModbusServer):
 #   Modbus TCP server data bank.
 ###########################################################
 def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank, slave_id):
+    global restartPLC
     while True:
-        # read the power meter holding register
-        pm_value = client.read_holding_registers(20, 1, slave=slave_id)
-        if not pm_value.isError():
-            # write the Modbus RTU power meter input to the Modbus TCP server memory (same address)
-            _logger.debug(f'Power Meter: {pm_value.registers} °C')
-            data_bank.set_holding_registers(20, pm_value.registers)
+        if restartPLC == False:
+            # read the power meter holding register
+            pm_value = client.read_holding_registers(20, 1, slave=slave_id)
+            if not pm_value.isError():
+                # write the Modbus RTU power meter input to the Modbus TCP server memory (same address)
+                _logger.debug(f'Power Meter: {pm_value.registers} °C')
+                data_bank.set_holding_registers(20, pm_value.registers)
 
-        time.sleep(constants.PM_POLL_SPEED)
+            time.sleep(constants.PM_POLL_SPEED)
 
 ###########################################################
 # Function: plc_client_transfer_switch
@@ -162,28 +170,30 @@ def plc_client_power_meter(client : ModbusSerialClient, data_bank : DataBank, sl
 #   switch the mains power or solar power.
 ###########################################################
 def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank, slave_id, switching_threshold):
+    global restartPLC
     switch_value = TRANSFER_SWITCH.MAINS
 
     # write the switching threshold to holding register 21 of the TCP server
     data_bank.set_holding_registers(21, [switching_threshold])
 
     while True:
-        # read the power meter holding register from Modbus TCP server data bank
-        pm_value = data_bank.get_holding_registers(20, 1)
+        if restartPLC == False:
+            # read the power meter holding register from Modbus TCP server data bank
+            pm_value = data_bank.get_holding_registers(20, 1)
 
-        # set the coil on the transfer switch depending on power output
-        if pm_value:
-            if pm_value[0] < switching_threshold:
-                switch_value = TRANSFER_SWITCH.MAINS
-            else:
-                switch_value = TRANSFER_SWITCH.SOLAR
-        client.write_coil(10, switch_value.value, slave=slave_id)
-        #_logger.info(f'Transfer Switch: {switch_value.value}')
+            # set the coil on the transfer switch depending on power output
+            if pm_value:
+                if pm_value[0] < switching_threshold:
+                    switch_value = TRANSFER_SWITCH.MAINS
+                else:
+                    switch_value = TRANSFER_SWITCH.SOLAR
+            client.write_coil(10, switch_value.value, slave=slave_id)
+            #_logger.info(f'Transfer Switch: {switch_value.value}')
 
-        # write coil transfer switch value to plc's server memory (same address)
-        data_bank.set_coils(10, [switch_value.value])
+            # write coil transfer switch value to plc's server memory (same address)
+            data_bank.set_coils(10, [switch_value.value])
 
-        time.sleep(constants.TS_POLL_SPEED)
+            time.sleep(constants.TS_POLL_SPEED)
 
 ###########################################################
 # Special Function: __main__
@@ -282,3 +292,9 @@ if __name__ == '__main__':
 
     while True:        
         time.sleep(1)
+
+        # simulate the PLC restarting
+        if restartPLC:
+            _logger.warning("Restarting PLC")
+            time.sleep(10)
+            restartPLC = False
