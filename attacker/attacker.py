@@ -420,28 +420,30 @@ if __name__ == "__main__":
     print(LOGO)
 
     menuPrompt = """
-Please select an attack to run against the ICS simulation:
-
-    Reconnaissance Attacks
-    (0) - address scan
-    (1) - function code scan
-    (2) - device identification attack
-
-    Response and Measurement Injection Attacks
-    (3) - naive sensor read
-    (4) - sporadic sensor measurement injection
-    (5) - calculated sensor measure injection
-    (6) - replayed measurement injection
-    
-    Command Injection Attacks
-    (7) - altered actuator state
-    (8) - altered control set points
-    (9)* - force listen mode
-    (10)** - restart communication
-
-    Denial of Service Attacks
-    (11) - packet flooding attack
-    (12) - invalid cyclic redundancy code
+-----------------------------------------------------------------
+| Please select an attack to run against the ICS simulation:    |
+|                                                               |
+|    Reconnaissance Attacks                                     |
+|    (0) - address scan                                         |
+|    (1) - function code scan                                   |
+|    (2) - device identification attack                         |
+|                                                               |
+|    Response and Measurement Injection Attacks                 |
+|    (3) - naive sensor read                                    |
+|    (4) - sporadic sensor measurement injection                |
+|    (5) - calculated sensor measure injection                  |
+|    (6) - replayed measurement injection                       |
+|                                                               |
+|    Command Injection Attacks                                  |
+|    (7) - altered actuator state                               |
+|    (8) - altered control set points                           |
+|    (9)* - force listen mode                                   |
+|    (10)** - restart communication                             |
+|                                                               |
+|    Denial of Service Attacks                                  |
+|    (11) - packet flooding attack                              |
+|    (12) - invalid cyclic redundancy code                      |
+-----------------------------------------------------------------
 
 """
 
@@ -475,7 +477,6 @@ Please select an attack to run against the ICS simulation:
             altered_control_set_points(["192.168.0.21", "192.168.0.22"])
         elif selection == 9:
             force_listen_mode(["192.168.0.21", "192.168.0.22"])
-            #force_listen_mode(["127.0.0.1"])
         elif selection == 10:
             restart_communication(["192.168.0.21", "192.168.0.22"])
         elif selection == 11:
