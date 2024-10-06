@@ -253,15 +253,9 @@ if __name__ == '__main__':
         model_name=model_name,
         user_application_name=user_app_name
         )
-    
-    #server = CustomModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
-
-    #server = ModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
 
     server = CustomModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
     server.ext_engine = server.custom_engine
-    
-    #server = ModbusServer(host="0.0.0.0", port=502, no_block=True, data_hdl=CustomDataHandler())
 
     # start the PLC server thread
     _logger.info(f"Starting PLC Server")
