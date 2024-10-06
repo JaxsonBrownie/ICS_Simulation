@@ -8,8 +8,17 @@ import argparse
 from dataset import AusgridDataset
 from enum import Enum
 from threading import Thread, Lock
-from pyModbusTCP.server import ModbusServer, DataBank, DeviceIdentification
+from pyModbusTCP.server import ModbusServer, DataBank, DeviceIdentification, DataHandler
 from pymodbus.client import ModbusSerialClient
+from threading import Event, Lock, Thread
+from pyModbusTCP.constants import (ENCAPSULATED_INTERFACE_TRANSPORT, EXP_DATA_ADDRESS,
+                        EXP_DATA_VALUE, EXP_ILLEGAL_FUNCTION, EXP_NONE,
+                        MAX_PDU_SIZE, MEI_TYPE_READ_DEVICE_ID, READ_COILS,
+                        READ_DISCRETE_INPUTS, READ_HOLDING_REGISTERS,
+                        READ_INPUT_REGISTERS, WRITE_MULTIPLE_COILS,
+                        WRITE_MULTIPLE_REGISTERS,
+                        WRITE_READ_MULTIPLE_REGISTERS, WRITE_SINGLE_COIL,
+                        WRITE_SINGLE_REGISTER)
 
 # enum to represent the switch state
 class TRANSFER_SWITCH(Enum):
@@ -27,6 +36,75 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 _logger.addHandler(console_handler)
+
+
+###########################################################
+# Class: CustomModbusServer(ModbusServer)
+# Purpose: Extends the ModbusServer class to add a custom
+#   external engine and function codes. Implements 0x08
+#   diagnostic function.
+###########################################################
+class CustomModbusServer(ModbusServer):
+
+    def __init__(self, host='localhost', port=502, no_block=False, ipv6=False,
+                 data_bank=None, data_hdl=None, ext_engine=None, device_id=None):
+        super().__init__(host, port, no_block, ipv6, data_bank, data_hdl, ext_engine, device_id)
+
+        # custom fields
+        self._force_listen_only = False
+    
+        # modbus default functions map + custom functions
+        self._func_map = {READ_COILS: self._read_bits,
+                        READ_DISCRETE_INPUTS: self._read_bits,
+                        READ_HOLDING_REGISTERS: self._read_words,
+                        READ_INPUT_REGISTERS: self._read_words,
+                        WRITE_SINGLE_COIL: self._write_single_coil,
+                        WRITE_SINGLE_REGISTER: self._write_single_register,
+                        WRITE_MULTIPLE_COILS: self._write_multiple_coils,
+                        WRITE_MULTIPLE_REGISTERS: self._write_multiple_registers,
+                        WRITE_READ_MULTIPLE_REGISTERS: self._write_read_multiple_registers,
+                        ENCAPSULATED_INTERFACE_TRANSPORT: self._encapsulated_interface_transport,
+                        0x08: self._diagnostics}
+
+    def custom_engine(self, session_data):
+        """Default internal processing engine: call default modbus func.
+
+        :type session_data: ModbusServer.SessionData
+        """
+        try:
+            # call the ad-hoc function, if none exists, send an "illegal function" exception
+            func = self._func_map[session_data.request.pdu.func_code]
+
+            # check function found is callable
+            if not callable(func):
+                raise TypeError
+            
+            # check if device is not in force listen only mode
+            if not self._force_listen_only:
+                # call ad-hoc func
+                func(session_data)
+        except (TypeError, KeyError):
+            session_data.response.pdu.build_except(session_data.request.pdu.func_code, EXP_ILLEGAL_FUNCTION)
+
+    def _diagnostics(self, session_data):
+        """
+        Function Diagnostics (0x08)
+
+        :param session_data: server engine data
+        :type session_data: ModbusServer.SessionData
+        """
+
+        # pdu alias
+        recv_pdu = session_data.request.pdu
+        send_pdu = session_data.response.pdu
+        # decode pdu
+        (sub_fc, _) = recv_pdu.unpack('>HH', from_byte=1, to_byte=5)
+        # handle sub-function codes
+        if sub_fc == 0x0004:    # Force Listen Only Mode
+            self._force_listen_only = True
+
+        # send back reflected packet
+        send_pdu.add_pack('>BHH', recv_pdu.func_code, 0x0004, 0x0000)
 
 ###########################################################
 # Private Function: get_ats_threshold
@@ -166,7 +244,14 @@ if __name__ == '__main__':
         user_application_name=user_app_name
         )
     
-    server = ModbusServer(host=server_ip, port=server_port, data_bank=data_bank, no_block=True, device_id=device_id)
+    #server = CustomModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
+
+    #server = ModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
+
+    server = CustomModbusServer(host=server_ip, port=server_port, no_block=True, device_id=device_id, data_bank=data_bank)
+    server.ext_engine = server.custom_engine
+    
+    #server = ModbusServer(host="0.0.0.0", port=502, no_block=True, data_hdl=CustomDataHandler())
 
     # start the PLC server thread
     _logger.info(f"Starting PLC Server")
