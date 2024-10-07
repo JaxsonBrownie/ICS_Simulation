@@ -1,5 +1,6 @@
 # project specific ignores
 containers/
+timestamps/
 
 # python ignores
 .venv/
