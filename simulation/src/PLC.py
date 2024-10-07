@@ -67,6 +67,12 @@ class CustomModbusServer(ModbusServer):
                         WRITE_READ_MULTIPLE_REGISTERS: self._write_read_multiple_registers,
                         ENCAPSULATED_INTERFACE_TRANSPORT: self._encapsulated_interface_transport,
                         0x08: self._diagnostics}
+        
+    def set_force_listen_only(self, value):
+        self._force_listen_only = value
+
+    def get_force_listen_only(self):
+        return self._force_listen_only
 
     def custom_engine(self, session_data):
         """Default internal processing engine: call default modbus func.
@@ -183,7 +189,7 @@ def plc_client_transfer_switch(client : ModbusSerialClient, data_bank : DataBank
 
             # set the coil on the transfer switch depending on power output
             if pm_value:
-                if pm_value[0] < switching_threshold:
+                if pm_value[0] <= switching_threshold:
                     switch_value = TRANSFER_SWITCH.MAINS
                 else:
                     switch_value = TRANSFER_SWITCH.SOLAR
@@ -284,6 +290,8 @@ if __name__ == '__main__':
     tp_client.daemon = True
     tp_client.start()
 
+
+    # process loop
     while True:        
         time.sleep(1)
 

