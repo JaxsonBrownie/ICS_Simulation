@@ -17,9 +17,6 @@ import datetime
 FILENAME = "timestamps/"+datetime.datetime.now(timezone.utc).strftime('%d-%M:%S-timestamps.txt')
 
 #########################################################################################
-# Function: recon
-# Purpose: Performs multiple reconnaissance attacks to obtain as
-#   much information on the network and Modbus devices as possible.
 # Objective 1: Reconnaissance
 def recon():
     # port/address scan
@@ -214,9 +211,8 @@ if __name__ == "__main__":
             selection = random.choice(selections)
             selections.remove(selection)
 
-            print("Waiting a random amount of time (2 to 4 minutes) before next attack...")
-            wait_time = random.randint(2 * 60, 4 * 60)
-
+            print("Waiting a random amount of time (4 to 7 minutes) before next attack...")
+            wait_time = random.randint(4 * 60, 7 * 60)
 
             time.sleep(wait_time)
 

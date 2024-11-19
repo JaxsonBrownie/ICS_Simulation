@@ -19,10 +19,6 @@ socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11 &
 serial1=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS12 pty,raw,echo=0,link=/dev/ttyS13 &
 serial2=$!
-#socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
-#serial3=$!
-#socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
-#serial4=$!
 
 sleep 2
 
@@ -92,8 +88,7 @@ create_hil_ui_container() {
 # Function to cleanup serial ports
 cleanup() {
     echo "Cleaning up serial ports"
-    #kill $serial1 $serial2 $serial3 $serial4
-    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 #/dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
+    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13
 }
 trap cleanup EXIT
 
@@ -119,8 +114,8 @@ create_component_container HIL2 HIL.py
 #create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 
 # HIL_UI1
-create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
-#create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
+#create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
+create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
 
 # PowerMeter2
 #create_component_container PowerMeter2 powermeter.py
@@ -129,8 +124,8 @@ create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.
 #create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
 
 # HIL_UI2
-create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
-#create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
+#create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
+create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
 
 # HMI_UI
 create_ui_container HMI_UI hmi_ui http://192.168.0.11:1001/
