@@ -9,37 +9,32 @@ PCAP_FILE = "./pcap/20241007-21.29-dataset1.pcapng"
 DATASET_FILE = "./datasets/test.csv"
 
 
-# Function: flag_packets
-# Purpose: Creates a list of malicious packets.
+# Function: flag_packet
+# Purpose: Checks if a packet is malicious.
 #   Malicious packets are either IP or ARP packets with source or
 #   destination of 192.168.0.1
-def flag_packets(packets):
+def flag_packet(packet):
     # initialise fields to search with
     hacker_ip = "192.168.0.1"
+    is_attack = False
     
-    # these packets are malicious
-    flagged_packets = []
-    
-    # iterate through each packet
-    for idx, packet in enumerate(packets):
-        # for IP layer packets
-        if IP in packet:
-            ip_layer = packet[IP]
+    # for IP layer packets
+    if IP in packet:
+        ip_layer = packet[IP]
 
-            # check if packets is to or from the hacker (192.168.0.1)
-            if ip_layer.src == hacker_ip or ip_layer.dst == hacker_ip:
-                pass
-                flagged_packets.append((idx + 1, packet))
-        
-        # for ARP packets
-        if ARP in packet:
-            arp_layer = packet[ARP]
-
-            # check if it's an ARP request and the target IP matches
-            if arp_layer.op == 1 and arp_layer.pdst == hacker_ip:  # 1 is ARP request
-                flagged_packets.append((idx + 1, packet))
+        # check if packets is to or from the hacker (192.168.0.1)
+        if ip_layer.src == hacker_ip or ip_layer.dst == hacker_ip:
+            is_attack = True
     
-    return flagged_packets
+    # for ARP packets
+    if ARP in packet:
+        arp_layer = packet[ARP]
+
+        # check if it's an ARP request and the target IP matches
+        if arp_layer.op == 1 and arp_layer.pdst == hacker_ip:  # 1 is ARP request
+            is_attack = True
+    
+    return is_attack
 
 
 # Function: get_protocol
@@ -117,13 +112,17 @@ def create_csv(packets):
         csv_writer.writerow(header)
 
         for pkt in packets:
+            # remove UDP packets (unwanted)
+            protocol = get_protocol(pkt)
+            if protocol == "UDP":
+                continue
+
             # standard packet information
             time = pkt.time
             src_mac = pkt.src if pkt.haslayer("Ethernet") else "N/A"
             dst_mac = pkt.dst if pkt.haslayer("Ethernet") else "N/A"
             src_ip = pkt["IP"].src if pkt.haslayer("IP") else "N/A"
             dst_ip = pkt["IP"].dst if pkt.haslayer("IP") else "N/A"
-            protocol = get_protocol(pkt)
 
             # modbus specific information
             if protocol == "ModbusTCP":
@@ -144,24 +143,24 @@ def create_csv(packets):
                 data = "N/A"
 
             # attack specific information
+            if flag_packet(pkt):
+                attack_binary = 1
+            else:
+                attack_binary = 0
 
             # write to csv
-            csv_writer.writerow([time, src_mac, dst_mac, src_ip, dst_ip, protocol, length, unit_id, func_code, data])
+            csv_writer.writerow([time, src_mac, dst_mac, src_ip, dst_ip, protocol, length, unit_id, func_code, data, attack_binary])
 
 
 if __name__ == "__main__":
     print(f"Parsing file {PCAP_FILE} into a formatted dataset")
 
     # read pcap
-    print(f"<1/3> Reading PCAP file: {PCAP_FILE}")
+    print(f"<1/2> Reading PCAP file: {PCAP_FILE}")
     packets = rdpcap(PCAP_FILE)
 
-    # obtain all malcious packets
-    print("<2/3> Obtaining all malicious packets")
-    flagged = flag_packets(packets)
-
     # create dataset
-    print("<3/3> Creating CSV dataset")
+    print("<2/2> Creating CSV dataset")
     create_csv(packets)
 
     print("Finished!")
