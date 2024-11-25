@@ -103,7 +103,7 @@ def reconstruct_modbus_data(modbus_layer):
                 else:
                     raise TypeError(f"Unexpected data type: {type(binary_data)}")
 
-    return hex(reconstructed_data), data_fields
+    return reconstructed_data.hex(), data_fields
 
 
 def create_csv(packets):
@@ -132,7 +132,7 @@ def create_csv(packets):
 
                 length = modbus_adu_layer.len if modbus_adu_layer != None else "N/A"
                 unit_id = modbus_adu_layer.unitId if modbus_adu_layer != None else "N/A"
-                func_code = hex(modbus_layer.funcCode) if modbus_layer != None else "N/A"
+                func_code = f'{modbus_layer.funcCode:x}' if modbus_layer != None else "N/A"
 
                 # rebuild data field
                 if modbus_layer != None:
