@@ -4,8 +4,10 @@ import csv
 
 
 # path to the pcap file
-#PCAP_FILE = "./pcap/20241008-17.56-dataset3.pcapng"
-PCAP_FILE = "./pcap/20241007-21.29-dataset1.pcapng"
+PCAP_FILE = "./pcap/20241008-17.56-dataset3.pcapng"
+#PCAP_FILE = "./pcap/20241007-21.29-dataset1.pcapng"
+TIMESTAMP_FILE = "./timestamp/08-37:40-timestamps.txt"
+
 DATASET_FILE = "./datasets/test.csv"
 
 
@@ -31,7 +33,7 @@ def flag_packet(packet):
         arp_layer = packet[ARP]
 
         # check if it's an ARP request and the target IP matches
-        if arp_layer.op == 1 and arp_layer.pdst == hacker_ip:  # 1 is ARP request
+        if arp_layer.psrc == hacker_ip:  # 1 is ARP request
             is_attack = True
     
     return is_attack
@@ -101,6 +103,8 @@ def reconstruct_modbus_data(modbus_layer):
     return reconstructed_data.hex(), data_fields
 
 
+# Function: create_csv
+# Purpose: Builds a CSV file from a parsed PCAP file, applying all required restrictions. 
 def create_csv(packets):
     with open(DATASET_FILE, mode='w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
@@ -153,7 +157,9 @@ def create_csv(packets):
 
 
 if __name__ == "__main__":
-    print(f"Parsing file {PCAP_FILE} into a formatted dataset")
+    print(f"PCAP file: {PCAP_FILE}")
+    print(f"TIMESTAMP file: {TIMESTAMP_FILE}")
+    print(f"Creating dataset from these files")
 
     # read pcap
     print(f"<1/2> Reading PCAP file: {PCAP_FILE}")
