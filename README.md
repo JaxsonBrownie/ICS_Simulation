@@ -10,6 +10,7 @@ The simulation directory contains all the contents for the simulation, and the a
 First ensure you have docker and docker-compose installed on your system:
 
 https://docs.docker.com/engine/install/
+
 https://docs.docker.com/compose/install/linux/#install-using-the-repository
 
 Then move into the simulation/ directory and execute the script start.sh as sudo:
