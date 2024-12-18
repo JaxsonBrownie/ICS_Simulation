@@ -271,8 +271,8 @@ if __name__ == "__main__":
             selection = random.choice(selections)
             selections.remove(selection)
 
-            print("Waiting a random amount of time (4 to 7 minutes) before next attack...")
-            wait_time = random.randint(4 * 60, 7 * 60)
+            print("Waiting a random amount of time (3 to 5 minutes) before next attack...")
+            wait_time = random.randint(3 * 60, 5 * 60)
 
             time.sleep(wait_time)
 

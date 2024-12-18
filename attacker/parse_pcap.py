@@ -1,13 +1,12 @@
 from scapy.all import rdpcap, IP, ARP, Ether, TCP, UDP
 from scapy.contrib.modbus import ModbusADURequest, ModbusADUResponse
+from datetime import datetime, timezone
 import csv
 
 
 # path to the pcap file
-PCAP_FILE = "./pcap/20241008-17.56-dataset3.pcapng"
-#PCAP_FILE = "./pcap/20241007-21.29-dataset1.pcapng"
-TIMESTAMP_FILE = "./timestamp/08-37:40-timestamps.txt"
-
+PCAP_FILE = "./pcap/20241127-11:08-dataset4.pcapng"
+TIMESTAMP_FILE = "./timestamps/27-29:19-timestamps.txt"
 DATASET_FILE = "./datasets/test.csv"
 
 
@@ -63,7 +62,7 @@ def get_protocol(packet):
     return protcol
 
 
-# Function reconstruct_modbus_data
+# Function: reconstruct_modbus_data
 # Purpose: Takes the lowest modbus Scapy layer and rebuilds the data field (only)
 #   as a hex string
 def reconstruct_modbus_data(modbus_layer):
@@ -101,6 +100,50 @@ def reconstruct_modbus_data(modbus_layer):
                     raise TypeError(f"Unexpected data type: {type(binary_data)}")
 
     return reconstructed_data.hex(), data_fields
+
+# Function: get_attack_data
+# Purpose: Uses the timestamp file to label each attack packet
+def get_attack_data(packet):
+    # define attack categories
+    attack_cat = {"0":"0", "1":"0", "2":"0", "3":"1", "4":"1", "5":"N/A", "6":"N/A",
+               "7":"2", "8":"2", "9":"2", "10":"2", "11":"3", "12":"3"}
+
+    # get and format packet time
+    pkt_time = datetime.fromtimestamp(float(packet.time), tz=timezone.utc)
+    #pkt_time = pkt_time.strftime(f"%H:%M:%S.{int(packet.time % 1 * 1000):05d}")
+
+    file = open(TIMESTAMP_FILE, 'r')
+    lines = file.readlines()
+
+    count = 0
+    for line in lines:
+        items = line.split(" : ")
+
+        # get latest objective
+        if "objective" in items[0]:
+            obj = items[0]
+
+        # convert the timestamp in the file to a datetime
+        att_time = datetime.strptime(items[2].strip(), "%H:%M:%S.%f")
+
+        # find the first items timestamp that is greater than the packets timestamp
+        if att_time.time() > pkt_time.time():
+
+            # get the attack 
+            attack = items[0]
+            
+            # get corresponding attack category
+            attack_num = ''.join(filter(str.isdigit, attack))
+            if attack_num.isdigit():
+                cat_num = attack_cat[attack_num]
+            else:
+                cat_num = "NOPE"
+
+            # get objective number
+            obj_num = ''.join(filter(str.isdigit, obj))
+            return attack_num, cat_num, obj_num
+        count += 1    
+    return "N/A", "N/A", "N/A"
 
 
 # Function: create_csv
@@ -149,16 +192,26 @@ def create_csv(packets):
             # attack specific information
             if flag_packet(pkt):
                 attack_binary = 1
+
+                # read the timestamps file and determine which specfic/obj/category attack it is
+                attack_specific, attack_category, attack_obj = get_attack_data(pkt)
             else:
                 attack_binary = 0
+                attack_specific = "N/A"
+                attack_category = "N/A"
+                attack_obj = "N/A"
 
             # write to csv
-            csv_writer.writerow([time, src_mac, dst_mac, src_ip, dst_ip, protocol, length, unit_id, func_code, data, attack_binary])
+            csv_writer.writerow([time, src_mac, dst_mac, src_ip, dst_ip, protocol, 
+                                 length, unit_id, func_code, data, 
+                                 attack_specific, attack_obj, attack_category, attack_binary])
 
 
 if __name__ == "__main__":
     print(f"PCAP file: {PCAP_FILE}")
     print(f"TIMESTAMP file: {TIMESTAMP_FILE}")
+    print(f"DATASET file: {DATASET_FILE}")
+    print()
     print(f"Creating dataset from these files")
 
     # read pcap
