@@ -7,7 +7,7 @@ import csv
 # path to the pcap file
 PCAP_FILE = "./pcap/20241127-11:08-dataset4.pcapng"
 TIMESTAMP_FILE = "./timestamps/27-29:19-timestamps.txt"
-DATASET_FILE = "./datasets/test.csv"
+DATASET_FILE = "./datasets/Dataset2.csv"
 
 
 # Function: flag_packet
