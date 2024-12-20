@@ -1,0 +1,5 @@
+numpy==2.1.1
+pyModbusTCP==0.3.0
+python-nmap==0.7.1
+scapy==2.5.0
+scipy==1.14.1
