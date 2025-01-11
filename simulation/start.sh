@@ -55,7 +55,8 @@ create_ui_container() {
 
     # Build the react frontend (creating a temporary env file to pass the environment variables during build)
     echo "REACT_APP_ENDPOINT=$3" > src/$2/.env
-    npm --prefix src/$2 run build > /dev/null
+    npm --prefix src/$2 install
+    npm --prefix src/$2 run build
     cp -r src/$2/build containers/$lowercase/src
     rm src/$2/.env
     rm -r src/$2/build
@@ -76,7 +77,8 @@ create_hil_ui_container() {
     # Build the react frontend (creating a temporary env file to pass the environment variables during build)
     echo "REACT_APP_ENDPOINT_PM=$3" >> src/$2/.env
     echo "REACT_APP_ENDPOINT_TS=$4" >> src/$2/.env
-    npm --prefix src/$2 run build > /dev/null
+    npm --prefix src/$2 install
+    npm --prefix src/$2 run build
     cp -r src/$2/build containers/$lowercase/src
     rm src/$2/.env
     rm -r src/$2/build
