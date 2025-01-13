@@ -7,6 +7,10 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Install tools
+apt install socat
+apt install npm
+
 # Reset container directories
 rm -r containers
 mkdir containers
