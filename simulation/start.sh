@@ -8,8 +8,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Install tools
-apt install socat
-apt install npm
+apt install -y socat
+apt install -y npm
 
 # Reset container directories
 rm -r containers
