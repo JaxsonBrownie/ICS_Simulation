@@ -116,8 +116,8 @@ create_component_container HIL2 HIL.py
 #create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 
 # HIL_UI1
-#create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
-create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
+create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
+#create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
 
 # PowerMeter2
 #create_component_container PowerMeter2 powermeter.py
@@ -126,8 +126,8 @@ create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3
 #create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
 
 # HIL_UI2
-#create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
-create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
+create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
+#create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
 
 # HMI_UI
 create_ui_container HMI_UI hmi_ui http://192.168.0.11:1001/
