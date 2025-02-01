@@ -155,7 +155,7 @@ if __name__ == '__main__':
     data_block = ModbusSequentialDataBlock.create()
 
     # create a Modbus slave context with the data block
-    slave = ModbusSlaveContext(ir=data_block, zero_mode=True)
+    slave = ModbusSlaveContext(hr=data_block, zero_mode=True)
     context = ModbusServerContext(slaves={slave_id: slave}, single=False)
 
     # start the power meter measurement update thread

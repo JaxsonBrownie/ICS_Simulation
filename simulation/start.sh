@@ -18,16 +18,16 @@ mkdir containers
 
 # Create the virtual serial ports
 echo "Creating virtual serial ports"
-rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13
+rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 /dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
 
 socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11 &
 serial1=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS12 pty,raw,echo=0,link=/dev/ttyS13 &
 serial2=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
-serial1=$!
+serial3=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
-serial2=$!
+serial4=$!
 
 sleep 2
 
@@ -64,7 +64,8 @@ create_ui_container() {
 
     # Build the react frontend (creating a temporary env file to pass the environment variables during build)
     echo "REACT_APP_ENDPOINT=$3" > src/$2/.env
-    npm --prefix src/$2 run build > /dev/null
+    npm --prefix src/$2 install
+    npm --prefix src/$2 run build
     cp -r src/$2/build containers/$lowercase/src
     rm src/$2/.env
     rm -r src/$2/build
@@ -85,7 +86,8 @@ create_hil_ui_container() {
     # Build the react frontend (creating a temporary env file to pass the environment variables during build)
     echo "REACT_APP_ENDPOINT_PM=$3" >> src/$2/.env
     echo "REACT_APP_ENDPOINT_TS=$4" >> src/$2/.env
-    npm --prefix src/$2 run build > /dev/null
+    npm --prefix src/$2 install
+    npm --prefix src/$2 run build
     cp -r src/$2/build containers/$lowercase/src
     rm src/$2/.env
     rm -r src/$2/build
@@ -97,7 +99,7 @@ create_hil_ui_container() {
 # Function to cleanup serial ports
 cleanup() {
     echo "Cleaning up serial ports"
-    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13
+    rm -r -f /dev/ttyS10 /dev/ttyS11 /dev/ttyS12 /dev/ttyS13 /dev/ttyS14 /dev/ttyS15 /dev/ttyS16 /dev/ttyS17
 }
 trap cleanup EXIT
 
@@ -158,4 +160,5 @@ docker compose build
 
 # Start Docker Compose in detached mode
 echo "Starting containers"
-docker compose up $1
+docker compose up $1 --build
+#wait $serial1 $serial2 $serial3 $serial4

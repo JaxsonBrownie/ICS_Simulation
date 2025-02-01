@@ -218,7 +218,8 @@ if __name__ == '__main__':
 
     # Parse the arguments
     args = parser.parse_args()
-    comm = args.comm
+    pm_comm = args.pm_comm
+    ts_comm = args.ts_comm
     pm_slave_id = args.pm_slave
     ts_slave_id = args.ts_slave
     
@@ -271,13 +272,17 @@ if __name__ == '__main__':
     tp_server.start()
 
     #----------------------------------------------------------------------
-    # init Modbus RTU client
-    client = ModbusSerialClient(port=comm, baudrate=9600, timeout=1)
-    client.connect()
+    # init Modbus RTU power meter client
+    pm_client = ModbusSerialClient(port=pm_comm, baudrate=9600, timeout=1)
+    pm_client.connect()
+
+    # init Modbus RTU transfer switch client
+    ts_client = ModbusSerialClient(port=ts_comm, baudrate=9600, timeout=1)
+    ts_client.connect()
 
     # start the power meter client thread
     _logger.info(f"Starting PLC Power Meter Client")
-    tp_client = Thread(target=plc_client_power_meter, args=(client, data_bank, pm_slave_id))
+    tp_client = Thread(target=plc_client_power_meter, args=(pm_client, data_bank, pm_slave_id))
     tp_client.daemon = True
     tp_client.start()
 
@@ -287,7 +292,7 @@ if __name__ == '__main__':
 
     # start the transfer switch client thread    
     _logger.info(f"ATS threshold value: {switching_threshold}")
-    tp_client = Thread(target=plc_client_transfer_switch, args=(client, data_bank, ts_slave_id, switching_threshold))
+    tp_client = Thread(target=plc_client_transfer_switch, args=(ts_client, data_bank, ts_slave_id, switching_threshold))
     tp_client.daemon = True
     tp_client.start()
 

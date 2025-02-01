@@ -88,7 +88,8 @@ services:
     privileged: true
     volumes:
       - "/dev/ttyS11:/dev/ttyS11"
-    command: ["python3", "PLC.py", "--comm", "/dev/ttyS11", "--pm_slave", "1", "--ts_slave", "2"]
+      - "/dev/ttyS13:/dev/ttyS13"
+    command: ["python3", "PLC.py", "--pm_comm", "/dev/ttyS11", "--ts_comm", "/dev/ttyS13", "--pm_slave", "1", "--ts_slave", "2"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.21
@@ -98,8 +99,9 @@ services:
     container_name: PLC2
     privileged: true
     volumes:
-      - "/dev/ttyS13:/dev/ttyS13"
-    command: ["python3", "PLC.py", "--comm", "/dev/ttyS13", "--pm_slave", "3", "--ts_slave", "4"]
+      - "/dev/ttyS15:/dev/ttyS15"
+      - "/dev/ttyS17:/dev/ttyS17"
+    command: ["python3", "PLC.py", "--pm_comm", "/dev/ttyS15", "--ts_comm", "/dev/ttyS17", "--pm_slave", "3", "--ts_slave", "4"]
     networks:
       vlan1:
         ipv4_address: 192.168.0.22

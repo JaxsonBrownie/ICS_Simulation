@@ -61,6 +61,8 @@ function App() {
   const hour = formatTime.hours;
   const minute = formatTime.minutes;
 
+  let dayCycle = "";
+
   // calculate day cycle
   if (hour < 6) {
     dayCycle = "Morning"
