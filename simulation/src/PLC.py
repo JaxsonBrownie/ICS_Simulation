@@ -211,7 +211,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Programmable Logic Controller")
     
     # Add arguments
-    parser.add_argument('-c', '--comm', type=str, help='Comm port for the serial Modbus client connection')
+    parser.add_argument('-c1', '--pm_comm', type=str, help='Comm port for the power meter serial Modbus client connection')
+    parser.add_argument('-c2', '--ts_comm', type=str, help='Comm port for the transfer switch serial Modbus client connection')
     parser.add_argument('-s1', '--pm_slave', type=int, help='Modbus RTU slave id for the power meter')
     parser.add_argument('-s2', '--ts_slave', type=int, help='Modbus RTU slave id for the transfer switch')
 

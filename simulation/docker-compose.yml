@@ -1,85 +1,85 @@
 services:
   # Sensors + Actuators
-  #powermeter1:
-  #  build: containers/powermeter1
-  #  container_name: PowerMeter1
-  #  privileged: true
-  #  volumes:
-  #    - "/dev/ttyS10:/dev/ttyS10"
-  #  command: ["python3", "powermeter.py", "--comm", "/dev/ttyS10", "--slave", "1", "--webport", "3001"]
-  #  ports:
-  #    - "3001:3001"
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.31
-
-  #transferswitch1:
-  #  build: containers/transferswitch1
-  #  container_name: TransferSwitch1
-  #  privileged: true
-  #  volumes:
-  #    - "/dev/ttyS12:/dev/ttyS12"
-  #  command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS12", "--slave", "2", "--webport", "3002"]
-  #  ports:
-  #    - "3002:3002"
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.32
-
-  #powermeter2:
-  #  build: containers/powermeter2
-  #  container_name: PowerMeter2
-  #  privileged: true
-  #  volumes:
-  #    - "/dev/ttyS14:/dev/ttyS14"
-  #  command: ["python3", "powermeter.py", "--comm", "/dev/ttyS14", "--slave", "3", "--webport", "3003"]
-  #  ports:
-  #    - "3003:3003"
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.33
-
-  #transferswitch2:
-  #  build: containers/transferswitch2
-  #  container_name: TransferSwitch2
-  #  privileged: true
-  #  volumes:
-  #    - "/dev/ttyS16:/dev/ttyS16"
-  #  command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS16", "--slave", "4", "--webport", "3004"]
-  #  ports:
-  #    - "3004:3004"
-  #  networks:
-  #    vlan1:
-  #      ipv4_address: 192.168.0.34
-
-  # HILs
-  hil1:
-    build: containers/hil1
-    container_name: HIL1
+  powermeter1:
+    build: containers/powermeter1
+    container_name: PowerMeter1
     privileged: true
     volumes:
       - "/dev/ttyS10:/dev/ttyS10"
-    command: ["python3", "HIL.py", "--comm", "/dev/ttyS10", "--pm_slave", "1", "--ts_slave", "2", "--pm_webport", "3001", "--ts_webport", "3002"]
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS10", "--slave", "1", "--webport", "3001"]
     ports:
       - "3001:3001"
-      - "3002:3002"
     networks:
       vlan1:
         ipv4_address: 192.168.0.31
 
-  hil2:
-    build: containers/hil2
-    container_name: HIL2
+  transferswitch1:
+    build: containers/transferswitch1
+    container_name: TransferSwitch1
     privileged: true
     volumes:
       - "/dev/ttyS12:/dev/ttyS12"
-    command: ["python3", "HIL.py", "--comm", "/dev/ttyS12", "--pm_slave", "3", "--ts_slave", "4", "--pm_webport", "3003", "--ts_webport", "3004"]
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS12", "--slave", "2", "--webport", "3002"]
     ports:
-      - "3003:3003"
-      - "3004:3004"
+      - "3002:3002"
     networks:
       vlan1:
         ipv4_address: 192.168.0.32
+
+  powermeter2:
+    build: containers/powermeter2
+    container_name: PowerMeter2
+    privileged: true
+    volumes:
+      - "/dev/ttyS14:/dev/ttyS14"
+    command: ["python3", "powermeter.py", "--comm", "/dev/ttyS14", "--slave", "3", "--webport", "3003"]
+    ports:
+      - "3003:3003"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.33
+
+  transferswitch2:
+    build: containers/transferswitch2
+    container_name: TransferSwitch2
+    privileged: true
+    volumes:
+      - "/dev/ttyS16:/dev/ttyS16"
+    command: ["python3", "transferswitch.py", "--comm", "/dev/ttyS16", "--slave", "4", "--webport", "3004"]
+    ports:
+      - "3004:3004"
+    networks:
+      vlan1:
+        ipv4_address: 192.168.0.34
+
+  # HILs
+  #hil1:
+  #  build: containers/hil1
+  #  container_name: HIL1
+  #  privileged: true
+  #  volumes:
+  #    - "/dev/ttyS10:/dev/ttyS10"
+  #  command: ["python3", "HIL.py", "--comm", "/dev/ttyS10", "--pm_slave", "1", "--ts_slave", "2", "--pm_webport", "3001", "--ts_webport", "3002"]
+  #  ports:
+  #    - "3001:3001"
+  #    - "3002:3002"
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.31
+
+  #hil2:
+  #  build: containers/hil2
+  #  container_name: HIL2
+  #  privileged: true
+  #  volumes:
+  #    - "/dev/ttyS12:/dev/ttyS12"
+  #  command: ["python3", "HIL.py", "--comm", "/dev/ttyS12", "--pm_slave", "3", "--ts_slave", "4", "--pm_webport", "3003", "--ts_webport", "3004"]
+  #  ports:
+  #    - "3003:3003"
+  #    - "3004:3004"
+  #  networks:
+  #    vlan1:
+  #      ipv4_address: 192.168.0.32
 
   # PLCs
   plc1:
@@ -116,47 +116,47 @@ services:
         ipv4_address: 192.168.0.11
 
   # UIs
-  #powermeter1_ui:
-  #  build: containers/powermeter1_ui
-  #  container_name: PowerMeter1_UI
-  #  command: ["serve", "-s", "build", "-l", "5001"]
-  #  ports:
-  #    - "5001:5001"
+  powermeter1_ui:
+    build: containers/powermeter1_ui
+    container_name: PowerMeter1_UI
+    command: ["serve", "-s", "build", "-l", "5001"]
+    ports:
+      - "5001:5001"
 
-  #powermeter2_ui:
-  #  build: containers/powermeter2_ui
-  #  container_name: PowerMeter2_UI
-  #  command: ["serve", "-s", "build", "-l", "5003"]
-  #  ports:
-  #    - "5003:5003"
+  powermeter2_ui:
+    build: containers/powermeter2_ui
+    container_name: PowerMeter2_UI
+    command: ["serve", "-s", "build", "-l", "5003"]
+    ports:
+      - "5003:5003"
 
-  #transferswitch1_ui:
-  #  build: containers/transferswitch1_ui
-  #  container_name: TransferSwitch1_UI
-  #  command: ["serve", "-s", "build", "-l", "5002"]
-  #  ports:
-  #    - "5002:5002"
+  transferswitch1_ui:
+    build: containers/transferswitch1_ui
+    container_name: TransferSwitch1_UI
+    command: ["serve", "-s", "build", "-l", "5002"]
+    ports:
+      - "5002:5002"
 
-  #transferswitch2_ui:
-  #  build: containers/transferswitch2_ui
-  #  container_name: TransferSwitch2_UI
-  #  command: ["serve", "-s", "build", "-l", "5004"]
-  #  ports:
-  #    - "5004:5004"
+  transferswitch2_ui:
+    build: containers/transferswitch2_ui
+    container_name: TransferSwitch2_UI
+    command: ["serve", "-s", "build", "-l", "5004"]
+    ports:
+      - "5004:5004"
     
-  hil1_ui:
-    build: containers/hil1_ui
-    container_name: HIL1_UI
-    command: ["serve", "-s", "build", "-l", "4001"]
-    ports:
-      - "4001:4001"
+  #hil1_ui:
+  #  build: containers/hil1_ui
+  #  container_name: HIL1_UI
+  #  command: ["serve", "-s", "build", "-l", "4001"]
+  #  ports:
+  #    - "4001:4001"
 
-  hil2_ui:
-    build: containers/hil2_ui
-    container_name: HIL2_UI
-    command: ["serve", "-s", "build", "-l", "4002"]
-    ports:
-      - "4002:4002"
+  #hil2_ui:
+  #  build: containers/hil2_ui
+  #  container_name: HIL2_UI
+  #  command: ["serve", "-s", "build", "-l", "4002"]
+  #  ports:
+  #    - "4002:4002"
 
   hmi_ui:
     build: containers/hmi_ui

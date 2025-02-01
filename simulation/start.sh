@@ -7,6 +7,11 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Install software
+apt install -y socat
+apt install -y npm
+npm -g install create-react-app
+
 # Reset container directories
 rm -r containers
 mkdir containers
@@ -102,46 +107,46 @@ create_component_container PLC1 PLC.py
 create_component_container PLC2 PLC.py
 
 # HIL1
-create_component_container HIL1 HIL.py
+#create_component_container HIL1 HIL.py
 
 # HIL2
-create_component_container HIL2 HIL.py
+#create_component_container HIL2 HIL.py
 
 # PowerMeter1
-#create_component_container PowerMeter1 powermeter.py
+create_component_container PowerMeter1 powermeter.py
 
 # PowerMeter1_UI
-#create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
+create_ui_container PowerMeter1_UI powermeter_ui http://192.168.0.31:3001/
 
 # HIL_UI1
 #create_hil_ui_container HIL1_UI hil_ui http://192.168.0.31:3001/ http://192.168.0.31:3002/
-create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
+#create_hil_ui_container HIL1_UI hil_ui http://127.0.0.1:3001/ http://127.0.0.1:3002/
 
 # PowerMeter2
-#create_component_container PowerMeter2 powermeter.py
+create_component_container PowerMeter2 powermeter.py
 
 # PowerMeter2_UI
-#create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.32:3003/
+create_ui_container PowerMeter2_UI powermeter_ui http://192.168.0.33:3003/
 
 # HIL_UI2
 #create_hil_ui_container HIL2_UI hil_ui http://192.168.0.32:3003/ http://192.168.0.32:3004/
-create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
+#create_hil_ui_container HIL2_UI hil_ui http://127.0.0.1:3003/ http://127.0.0.1:3004/
 
 # HMI_UI
 create_ui_container HMI_UI hmi_ui http://192.168.0.11:1001/
 #create_ui_container HMI_UI hmi_ui http://127.0.0.1:1001/
 
 # TransferSwitch1
-#create_component_container TransferSwitch1 transferswitch.py
+create_component_container TransferSwitch1 transferswitch.py
 
 # TransferSwitch1_UI
-#create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.31:3002/
+create_ui_container TransferSwitch1_UI transferswitch_ui http://192.168.0.32:3002/
 
 # TransferSwitch2
-#create_component_container TransferSwitch2 transferswitch.py
+create_component_container TransferSwitch2 transferswitch.py
 
 # TransferSwitch2_UI
-#create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.32:3004/
+create_ui_container TransferSwitch2_UI transferswitch_ui http://192.168.0.34:3004/
 
 # Build containers
 echo "Building containers"
@@ -150,4 +155,3 @@ docker compose build
 # Start Docker Compose in detached mode
 echo "Starting containers"
 docker compose up $1
-wait $serial1 $serial2 $serial3 $serial4

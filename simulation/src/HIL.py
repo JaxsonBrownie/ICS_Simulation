@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# NOT USED IN THE NEW SIMULATION
+# ONLY USED IN THE PHYSICAL SIMULATION
+
 import sys
 import time
 import logging
