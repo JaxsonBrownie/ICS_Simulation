@@ -24,6 +24,10 @@ socat -d pty,raw,echo=0,link=/dev/ttyS10 pty,raw,echo=0,link=/dev/ttyS11 &
 serial1=$!
 socat -d pty,raw,echo=0,link=/dev/ttyS12 pty,raw,echo=0,link=/dev/ttyS13 &
 serial2=$!
+socat -d pty,raw,echo=0,link=/dev/ttyS14 pty,raw,echo=0,link=/dev/ttyS15 &
+serial1=$!
+socat -d pty,raw,echo=0,link=/dev/ttyS16 pty,raw,echo=0,link=/dev/ttyS17 &
+serial2=$!
 
 sleep 2
 
