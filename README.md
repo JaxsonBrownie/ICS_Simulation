@@ -32,3 +32,6 @@ On successful startup, you'll see the containers output like this:
 ---
 ## Full Description
 Refer to the PDF paper at the root directory of this repo for a full explaination on the simulation.
+
+Personal email: jokesene@outlook.com
+Student/Work email: jaxson.brown@student.curtin.edu.au
